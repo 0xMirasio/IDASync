@@ -3,8 +3,16 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# IDA file
+*.i64
+*.til
+*.nam
+*.id1
+*.id2
+
 # C extensions
 *.so
+*.o
 
 # Distribution / packaging
 .Python
