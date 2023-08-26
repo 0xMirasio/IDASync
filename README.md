@@ -14,13 +14,19 @@ Automatic IDA instance syncing for better reverse.
 $ python plugin/install.py
 ```
 
-**Manual installation**: copy the [plugin/idasync](plugin/idasync/) directory and [plugin/idasync.py](plugin/idasync.py) into IDA plugins folder.
+**Manual installation**: 
+ * copy the [plugin/idasync](plugin/idasync/) directory and [plugin/idasync.py](plugin/idasync.py) into IDA plugins folder.
+ * python3 framework/setup.py install or pip install framework/dist/idasync.[version].tar.gz
 
 
 ### Usage
 
-Use CTRL+Shift+F3 in IDA to connect to server. (or any hotkey you want, see CONFIG.py)
-* see ```plugin/config.json``` - configuration to be used, you can change settings before installing framework
+Server must be run before using the plugin : **python3 -m idasync runserver**
+
+Use **CTRL+Shift+F3** in IDA to connect to server.
+* see ```plugin/config.json``` - configuration to be used
+    * config.json can be updated in parameters tab in plugins GUI
+    * installing a newest version of plugin will erase old config.json file in cache folder
 
 For functionality, see ressource/paper.pdf
 

@@ -3,6 +3,7 @@
 import os
 import shutil
 import sys
+import json
 
 """
     Installs the IDASync plugin into your IDA plugins user directory :
@@ -14,7 +15,7 @@ import sys
 
 
 ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
-INSTALL = ["idasync.py", "idasync"]
+INSTALL = ["plugin/idasync.py", "plugin/idasync"]
 
 config = "config.json"
 
@@ -43,15 +44,35 @@ def install(where: str) -> int:
 
     return 0
 
+def update_version(config, version):
+    conf_data = open(config, 'r').read()
+    conf_ = json.loads(conf_data)
+
+    conf_['version'] = version
+
+    with open(config, 'w') as conf_file:
+        r = json.dumps(conf_, indent=4)
+        conf_file.write(r)
+        conf_file.close()
+    
+
+
 def install_cache(cache_dir : str) -> int:
+
     # Remove old files
     base = os.path.basename(config)
     if os.path.exists(os.path.join(cache_dir, base)):
         dst = os.path.join(cache_dir, os.path.basename(config))
         os.remove(dst)
 
+    v_src = os.path.abspath(os.path.join(ROOT_DIR, "VERSION"))
+    version = open(v_src,"r").read()
+    
+
     src = os.path.abspath(os.path.join(ROOT_DIR, config))
     dst = os.path.join(cache_dir, os.path.basename(config))
+
+    update_version(src, version)
 
     print(f'Creating "{dst}"')
     shutil.copy(src, dst)

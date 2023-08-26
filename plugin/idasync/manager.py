@@ -2,14 +2,18 @@ import os
 import json
 from idasync.logging import pprint
 from idasync.GUI.gui_main import Ui_MainWindow
+from PyQt5.QtCore import QObject
 
-class Manager():
-    def __init__(self) -> None:
-        self.gui_main_instancied = None
+class Manager(QObject):
+
+    def __init__(self, instancied) -> None:
+        super(Manager, self).__init__()
+        
+        self.gui_running = None
+        self.gui_main_instancied = instancied
         r = self.checkConfig()
         if r:
             return None
-
 
     def checkConfig(self):
         if os.name == "posix":
@@ -28,15 +32,19 @@ class Manager():
             data = json.load(file)
         
         self.version = data["version"]
+        self.port = data["port"]
+        self.ip = data["ip"]
         return 0
 
     def start(self):
         # do not create multiple instances
-        if self.gui_main_instancied is None:
+        if not self.gui_main_instancied:
             self.gui_start = Ui_MainWindow(self)
             self.gui_start.show()
-            self.gui_main_instancied = True
+            
         else:
             self.gui_start.activateWindow()
             self.gui_start.raise_()
-        
+
+
+

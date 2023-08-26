@@ -16,20 +16,20 @@ class IDASyncPlugin(idaapi.plugin_t):
     wanted_hotkey = "Ctrl+Alt+F3"
     flags = idaapi.PLUGIN_UNL
 
-    # find & initialize all extensions
+    
     def init(self) -> idaapi.plugmod_t:
         print('************** IDASync | Thibault Poncetta *****************')
+        self.gui_main_instancied = False
         return idaapi.PLUGIN_KEEP
 
     def run(self, args):
         pprint("Plugin Running")
-        manager = Manager()
+        manager = Manager(self.gui_main_instancied)
         if not manager:
             return -1
 
         manager.start()      
-
-        pprint("Plugin Exited")
+        self.gui_main_instancied = True
 
     def term(self):
         pass
