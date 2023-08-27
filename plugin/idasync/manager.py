@@ -1,5 +1,6 @@
 import os
 import json
+import ida_nalt
 from idasync.logging import pprint
 from idasync.GUI.gui_main import Ui_MainWindow
 from PyQt5.QtCore import QObject
@@ -14,6 +15,8 @@ class Manager(QObject):
         r = self.checkConfig()
         if r:
             return None
+        
+        self.name_instance = ida_nalt.get_root_filename()
 
     def checkConfig(self):
         if os.name == "posix":

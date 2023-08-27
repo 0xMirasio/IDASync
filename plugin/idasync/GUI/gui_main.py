@@ -2,9 +2,10 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 import ida_kernwin
 import idaapi
 
-import xmlrpc.client
 
 from idasync.logging import pprint
+from idasync.rpcclient import Client
+from PyQt5.QtCore import QTimer
 
 class Ui_MainWindow(QtWidgets.QMainWindow):
     
@@ -12,22 +13,25 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         parent = idaapi.PluginForm.FormToPyQtWidget(ida_kernwin.get_current_widget())
         super().__init__(parent)
         self.manager = manager
+        self.client = Client()
         
         self.console_ = ["UI_Initialised_OK"]
+        self.timer = QTimer(self)
 
         self.setupUi(self)
         self.setupAction()
         self.setupLabel()
 
-        
+        self.is_server_connected = False
+
+        self.timer.start(30000) #update every 30s
+
 
     def setupLabel(self):
         self.l_v_ver.setText(self.manager.version)
         self.l_v_serv_status.setText("Disconnected")
 
-        nb_instance = int(self.l_v_instance.text())
-        if nb_instance == 0:
-            self.instance_select.addItem("No instance found")
+        self.instance_select.addItem("No instance found")
 
         self.le_v_ip.setText(self.manager.ip)
         self.le_v_port.setText(str(self.manager.port))
@@ -42,27 +46,79 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.p_console.setText(tt_console)
 
     def closeEvent(self, event):
+        (ret, err) = self.client.disconnect_instance(self.manager.name_instance)
+        if ret:
+            pprint(f"Failed to close instance : {err}")
         event.accept()
+
+    def toConsole(self, msg):
+        self.console_.append(msg)
+        self.update_console()
+
+    def updateInstance(self, instances):
+        self.instance_select.clear()
+
+        if len(instances) == 0:
+            self.instance_select.addItem("No instance found")
+            return
+
+        for instance in instances:
+            self.instance_select.addItem(instance)
+
+    def get_instance(self):
+        (ret, err, instances) = self.client.get_instance()
+        if ret:
+            self.toConsole(f"Couldn't get connected instances of Server : {err}")
+            self.progressBar.setValue(0)
+
+        self.updateInstance(instances)
+        self.l_v_instance.setText(str(len(instances)))
 
     def connectRPC(self):
 
         self.progressBar.setValue(10)
-        try:
-            with xmlrpc.client.ServerProxy("http://localhost:4444") as proxy:
-                result = proxy.helloworld()
-                pprint(result)
-        except Exception as e:
-            self.console_.append(f"Couldn't connect to Server : {str(e)}")
-            self.console_.append("You can run server with : \npython3 -m idasync runserver")
-            self.update_console()
+
+        (ret, err) = self.client.ping()
+        if ret:
+            self.toConsole(f"Couldn't connect to Server : {err}")
+            self.toConsole("You can run server with : \npython3 -m idasync runserver")
+            self.progressBar.setValue(0)      
+            return -1
+        
+        self.progressBar.setValue(20)
+        self.toConsole("Ping Server : Sucess")
+
+
+        (ret, err) = self.client.register_instance(self.manager.name_instance)
+        if ret:
+            self.toConsole(f"Couldn't register instance to Server : {err}")
             self.progressBar.setValue(0)
+            return -1
+        
+        self.progressBar.setValue(30)
+        self.toConsole("Register Instance to Server : Sucess")
+
+        ret = self.get_instance()
+        if ret:
+            return -1
+        
+        self.toConsole("Get Instances from Server : Sucess")
+
+        self.l_v_serv_status.setText("Connected")
+        self.progressBar.setValue(100)
+        self.is_server_connected = True
+
+    def update_(self):
+        if self.is_server_connected == False:
             return
         
-        self.l_v_serv_status.setText("Connected")
+        self.get_instance()
+
 
     def setupAction(self):
         self.menuExit.aboutToShow.connect(self.close)
         self.b_connect.clicked.connect(self.connectRPC)
+        self.timer.timeout.connect(self.update_)
 
     def setupUi(self, IDASync):
         IDASync.setObjectName("IDASync")

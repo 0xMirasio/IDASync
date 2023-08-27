@@ -12,15 +12,16 @@ def read_version():
 
 
 setup(
-    name='idasync',
+    name='idasyncserver',
     version=read_version(),
     packages=find_packages(),
     author='thibault poncetta',
     entry_points={
         'console_scripts': [
-            'idasync=idasync:main',
+            'idasyncserver=idasyncserver:main',
         ],
     },
     summary='Utility Server to Work on multiple IDA instances',
+    requires=["fastapi", "uvicorn","httpx"]
 )
 

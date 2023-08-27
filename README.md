@@ -16,15 +16,15 @@ $ python plugin/install.py
 
 **Manual installation**: 
  * copy the [plugin/idasync](plugin/idasync/) directory and [plugin/idasync.py](plugin/idasync.py) into IDA plugins folder.
- * python3 framework/setup.py install or pip install framework/dist/idasync.[version].tar.gz
+ * cd framework && pip install .
 
 
 ### Usage
 
-Server must be run before using the plugin : **python3 -m idasync runserver**
+Server must be run before using the plugin : **python3 -m idasync runserver** or **idasync runserver**
 
 Use **CTRL+Shift+F3** in IDA to connect to server.
-* see ```plugin/config.json``` - configuration to be used
+* see ```config.json``` - configuration to be used
     * config.json can be updated in parameters tab in plugins GUI
     * installing a newest version of plugin will erase old config.json file in cache folder
 
