@@ -4,7 +4,8 @@ import idaapi
 
 
 from idasync.logging import pprint
-from idasync.rpcclient import Client
+from idasync.apiclient import Client
+from idasync.gui_client import *
 from PyQt5.QtCore import QTimer
 
 class Ui_MainWindow(QtWidgets.QMainWindow):
@@ -17,33 +18,42 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         
         self.console_ = ["UI_Initialised_OK"]
         self.timer = QTimer(self)
+        self.structs = {}
 
         self.setupUi(self)
         self.setupAction()
         self.setupLabel()
 
         self.is_server_connected = False
+        self.timer.start(10000) #update every 10s
 
-        self.timer.start(30000) #update every 30s
+        self.menuExit.aboutToShow.connect(self.close)
 
+    #if we connect connectRPC directly in setupAction(), self context will be gui_client.py and we don't want that
+    def wrapper_connectRPC(self):
+        connectRPC(self)
+
+    def wrapper_update(self):
+        update_(self)
+
+    def setupAction(self):
+        self.b_connect.clicked.connect(self.wrapper_connectRPC)
+        self.timer.timeout.connect(self.wrapper_update)
 
     def setupLabel(self):
         self.l_v_ver.setText(self.manager.version)
         self.l_v_serv_status.setText("Disconnected")
 
         self.instance_select.addItem("No instance found")
+        self.structure_select.addItem("No structure found")
 
         self.le_v_ip.setText(self.manager.ip)
         self.le_v_port.setText(str(self.manager.port))
 
-        self.update_console()
+        self.l_v_struc_size.setText("")
+        self.l_p_struc_size.setText("")
 
-    def update_console(self):
-        tt_console = ""
-        for item in self.console_:
-            tt_console += item + "\n"
-
-        self.p_console.setText(tt_console)
+        update_console(self)
 
     def closeEvent(self, event):
         (ret, err) = self.client.disconnect_instance(self.manager.name_instance)
@@ -51,74 +61,6 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
             pprint(f"Failed to close instance : {err}")
         event.accept()
 
-    def toConsole(self, msg):
-        self.console_.append(msg)
-        self.update_console()
-
-    def updateInstance(self, instances):
-        self.instance_select.clear()
-
-        if len(instances) == 0:
-            self.instance_select.addItem("No instance found")
-            return
-
-        for instance in instances:
-            self.instance_select.addItem(instance)
-
-    def get_instance(self):
-        (ret, err, instances) = self.client.get_instance()
-        if ret:
-            self.toConsole(f"Couldn't get connected instances of Server : {err}")
-            self.progressBar.setValue(0)
-
-        self.updateInstance(instances)
-        self.l_v_instance.setText(str(len(instances)))
-
-    def connectRPC(self):
-
-        self.progressBar.setValue(10)
-
-        (ret, err) = self.client.ping()
-        if ret:
-            self.toConsole(f"Couldn't connect to Server : {err}")
-            self.toConsole("You can run server with : \npython3 -m idasync runserver")
-            self.progressBar.setValue(0)      
-            return -1
-        
-        self.progressBar.setValue(20)
-        self.toConsole("Ping Server : Sucess")
-
-
-        (ret, err) = self.client.register_instance(self.manager.name_instance)
-        if ret:
-            self.toConsole(f"Couldn't register instance to Server : {err}")
-            self.progressBar.setValue(0)
-            return -1
-        
-        self.progressBar.setValue(30)
-        self.toConsole("Register Instance to Server : Sucess")
-
-        ret = self.get_instance()
-        if ret:
-            return -1
-        
-        self.toConsole("Get Instances from Server : Sucess")
-
-        self.l_v_serv_status.setText("Connected")
-        self.progressBar.setValue(100)
-        self.is_server_connected = True
-
-    def update_(self):
-        if self.is_server_connected == False:
-            return
-        
-        self.get_instance()
-
-
-    def setupAction(self):
-        self.menuExit.aboutToShow.connect(self.close)
-        self.b_connect.clicked.connect(self.connectRPC)
-        self.timer.timeout.connect(self.update_)
 
     def setupUi(self, IDASync):
         IDASync.setObjectName("IDASync")
@@ -195,8 +137,45 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.sync_.setAutoFillBackground(False)
         self.sync_.setTabShape(QtWidgets.QTabWidget.Triangular)
         self.sync_.setObjectName("sync_")
+        self.tab = QtWidgets.QWidget()
+        self.tab.setObjectName("tab")
+        self.sync_.addTab(self.tab, "")
         self.sync_struct = QtWidgets.QWidget()
         self.sync_struct.setObjectName("sync_struct")
+        self.structure_select = QtWidgets.QComboBox(self.sync_struct)
+        self.structure_select.setGeometry(QtCore.QRect(30, 70, 391, 61))
+        self.structure_select.setObjectName("structure_select")
+        self.l_p_select_struct = QtWidgets.QLabel(self.sync_struct)
+        self.l_p_select_struct.setGeometry(QtCore.QRect(30, 30, 221, 21))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        font.setBold(True)
+        self.l_p_select_struct.setFont(font)
+        self.l_p_select_struct.setObjectName("l_p_select_struct")
+        self.p_struc_overview = QtWidgets.QTextEdit(self.sync_struct)
+        self.p_struc_overview.setGeometry(QtCore.QRect(70, 220, 661, 341))
+        self.p_struc_overview.setObjectName("p_struc_overview")
+        self.l_p_struc_overview = QtWidgets.QLabel(self.sync_struct)
+        self.l_p_struc_overview.setGeometry(QtCore.QRect(300, 170, 221, 21))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        font.setBold(True)
+        self.l_p_struc_overview.setFont(font)
+        self.l_p_struc_overview.setObjectName("l_p_struc_overview")
+        self.l_p_struc_size = QtWidgets.QLabel(self.sync_struct)
+        self.l_p_struc_size.setGeometry(QtCore.QRect(470, 90, 71, 21))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        font.setBold(True)
+        self.l_p_struc_size.setFont(font)
+        self.l_p_struc_size.setObjectName("l_p_struc_size")
+        self.l_v_struc_size = QtWidgets.QLabel(self.sync_struct)
+        self.l_v_struc_size.setGeometry(QtCore.QRect(560, 90, 71, 21))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        font.setBold(True)
+        self.l_v_struc_size.setFont(font)
+        self.l_v_struc_size.setObjectName("l_v_struc_size")
         self.sync_.addTab(self.sync_struct, "")
         self.sync_enums = QtWidgets.QWidget()
         self.sync_enums.setObjectName("sync_enums")
@@ -229,6 +208,14 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         font.setBold(True)
         self.l_p_select_instance.setFont(font)
         self.l_p_select_instance.setObjectName("l_p_select_instance")
+        self.l_p_console = QtWidgets.QLabel(self.main_idasync)
+        self.l_p_console.setGeometry(QtCore.QRect(110, 60, 71, 21))
+        font = QtGui.QFont()
+        font.setFamily("Myanmar Text")
+        font.setPointSize(10)
+        font.setBold(False)
+        self.l_p_console.setFont(font)
+        self.l_p_console.setObjectName("l_p_console")
         self.sync_.raise_()
         self.l_p_ver.raise_()
         self.l_v_ver.raise_()
@@ -241,6 +228,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.l_p_instance.raise_()
         self.l_v_instance.raise_()
         self.l_p_select_instance.raise_()
+        self.l_p_console.raise_()
         self.main_.addTab(self.main_idasync, "")
         self.main_opt = QtWidgets.QWidget()
         self.main_opt.setObjectName("main_opt")
@@ -271,6 +259,16 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         font.setBold(True)
         self.b_update_config.setFont(font)
         self.b_update_config.setObjectName("b_update_config")
+        self.l_p_sync_time = QtWidgets.QLabel(self.main_opt)
+        self.l_p_sync_time.setGeometry(QtCore.QRect(20, 90, 141, 21))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        font.setBold(True)
+        self.l_p_sync_time.setFont(font)
+        self.l_p_sync_time.setObjectName("l_p_sync_time")
+        self.l_v_sync_time = QtWidgets.QTextEdit(self.main_opt)
+        self.l_v_sync_time.setGeometry(QtCore.QRect(170, 90, 171, 21))
+        self.l_v_sync_time.setObjectName("l_v_sync_time")
         self.main_.addTab(self.main_opt, "")
         self.main_info = QtWidgets.QWidget()
         self.main_info.setObjectName("main_info")
@@ -296,7 +294,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 
         self.retranslateUi(IDASync)
         self.main_.setCurrentIndex(0)
-        self.sync_.setCurrentIndex(0)
+        self.sync_.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(IDASync)
 
     def retranslateUi(self, IDASync):
@@ -307,15 +305,22 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.b_connect.setText(_translate("IDASync", "Connect to IDASync"))
         self.l_p_serv_status.setText(_translate("IDASync", "Status : "))
         self.l_v_serv_status.setText(_translate("IDASync", "serv_status"))
+        self.sync_.setTabText(self.sync_.indexOf(self.tab), _translate("IDASync", "Symbol"))
+        self.l_p_select_struct.setText(_translate("IDASync", "Select a Structure"))
+        self.l_p_struc_overview.setText(_translate("IDASync", "Structure Overview"))
+        self.l_p_struc_size.setText(_translate("IDASync", "Size : "))
+        self.l_v_struc_size.setText(_translate("IDASync", "0"))
         self.sync_.setTabText(self.sync_.indexOf(self.sync_struct), _translate("IDASync", "Structure"))
         self.sync_.setTabText(self.sync_.indexOf(self.sync_enums), _translate("IDASync", "Enums"))
         self.l_p_instance.setText(_translate("IDASync", "Number of IDA instances connected : "))
         self.l_v_instance.setText(_translate("IDASync", "0"))
         self.l_p_select_instance.setText(_translate("IDASync", "Select Instance To Sync Data : "))
+        self.l_p_console.setText(_translate("IDASync", "console"))
         self.main_.setTabText(self.main_.indexOf(self.main_idasync), _translate("IDASync", "IDASync"))
         self.l_p_ip.setText(_translate("IDASync", "Listening ON :"))
         self.l_p_port.setText(_translate("IDASync", "Port : "))
         self.b_update_config.setText(_translate("IDASync", "Update CONFIG"))
+        self.l_p_sync_time.setText(_translate("IDASync", "Sync Server Time"))
         self.main_.setTabText(self.main_.indexOf(self.main_opt), _translate("IDASync", "Options"))
         self.l_p_author_2.setText(_translate("IDASync", "Bug ? Report at thibault.poncetta@gmail.com"))
         self.main_.setTabText(self.main_.indexOf(self.main_info), _translate("IDASync", "Information"))

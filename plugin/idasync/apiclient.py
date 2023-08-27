@@ -1,5 +1,7 @@
 import httpx
 
+from idasync.logging import pprint
+
 class Client():
     def __init__(self) -> None:
         self.base_url = "http://localhost:4444"
@@ -77,75 +79,3 @@ class Client():
             
         except Exception as e:
             return (1, str(e), {})
-
-def main():
-    cli = Client()
-
-    (r,err) = cli.ping()
-    if r:
-        print(err)
-        return -1
-    
-    print("ok ping")
-
-    (ret, err) = cli.register_instance("test_client")
-    if ret:
-        print(f"Couldn't register instance to Server : {err}")
-        return -1
-    
-    print("ok register_instance")
-
-    (ret, err, instances) = cli.get_instance()
-    if ret:
-        print(f"Couldn't get instances from Server : {err}")
-        return -1
-    
-    print("Get instance from server : ", instances)
-
-
-    test_struct = {
-        "structs": [
-            {
-                "struct_name": "test",
-                "size": 6,
-                "members": [
-                    {
-                        "name": "field_0",
-                        "type": "word"
-                    },
-                    {
-                        "name": "field_2",
-                        "type": "dword"
-                    }
-                ]
-            }
-        ]
-    }
-
-    (ret, err) = cli.register_structs(test_struct, "test_client")
-    if ret:
-        print(f"Couldn't register structs to Server : {err}")
-        return -1
-
-    print("register structs ok")
-
-    (ret, err, structs) = cli.get_structs("test_client")
-    if ret:
-        print(f"Couldn't gets structs from Server : {err}")
-        return -1
-
-    print("gets structs of test_client from server : ", structs) 
-
-
-    (ret, err) = cli.disconnect_instance("test_client")
-    if ret:
-        print(f"Couldn't remove instance from Server : {err}")
-        return -1
-
-    print("disconnect instance ok")
-
-
-
-
-if __name__ == "__main__":
-    main()
