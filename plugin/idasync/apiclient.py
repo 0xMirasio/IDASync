@@ -1,6 +1,6 @@
 import httpx
 
-from idasync.logging import pprint
+from idasync.util import pprint
 
 class Client():
     def __init__(self) -> None:
@@ -79,3 +79,20 @@ class Client():
             
         except Exception as e:
             return (1, str(e), {})
+        
+    def server_hasNewUpdate(self):
+        try:
+            response = self.client.get(f"{self.base_url}/hasNewUpdate/")
+            if response.status_code == 200:
+                if response.text.replace('"','') == "serverHasNewUpdate":
+                    return (0, "", 1)
+            
+                elif response.text.replace('"','') == "serverHasNoNewUpdate":
+                    return (0, "", 0)
+                else:
+                    return (1, "[ERROR] Unknow response msg from server", 0)
+            
+            return (1, f"[ERROR] hasNewUpdate() failed : {response.text}", {})
+            
+        except Exception as e:
+            return (1, str(e), 0)

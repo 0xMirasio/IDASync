@@ -2,7 +2,7 @@ import idaapi
 import ida_kernwin
 import os
 
-from idasync.logging import pprint
+from idasync.util import pprint
 from idasync.manager import Manager
 
 idaapi.require("idasync.GUI.gui_main")

@@ -1,7 +1,7 @@
 import os
 import json
 import ida_nalt
-from idasync.logging import pprint
+from idasync.util import pprint
 from idasync.GUI.gui_main import Ui_MainWindow
 from PyQt5.QtCore import QObject
 

@@ -3,9 +3,9 @@ import ida_kernwin
 import idaapi
 
 
-from idasync.logging import pprint
+from idasync.util import pprint,update_console
 from idasync.apiclient import Client
-from idasync.gui_client import *
+from idasync.lib import *
 from PyQt5.QtCore import QTimer
 
 class Ui_MainWindow(QtWidgets.QMainWindow):
@@ -17,35 +17,62 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.client = Client()
         
         self.console_ = ["UI_Initialised_OK"]
-        self.timer = QTimer(self)
-        self.structs = {}
+        
+        self.structs_all = {}
 
         self.setupUi(self)
         self.setupAction()
         self.setupLabel()
 
         self.is_server_connected = False
-        self.timer.start(10000) #update every 10s
+
+        #self.timer = QTimer(self)
+        #self.timer.start(30000) #update every 30s, < can lag ida
 
         self.menuExit.aboutToShow.connect(self.close)
 
-    #if we connect connectRPC directly in setupAction(), self context will be gui_client.py and we don't want that
+    #wrapper for gui_client
+    #------------------------
     def wrapper_connectRPC(self):
         connectRPC(self)
 
+    
     def wrapper_update(self):
         update_(self)
+    
 
+    def wrapper_structure_change(self):
+        update_structure(self)
+
+    def wrapper_instance_change(self):
+        update_property(self)
+
+    #------------------------------
+
+    """
+    Set up all actions & Buttons
+    """
     def setupAction(self):
+        #init button
         self.b_connect.clicked.connect(self.wrapper_connectRPC)
-        self.timer.timeout.connect(self.wrapper_update)
+        self.b_update.clicked.connect(self.wrapper_update)
+        #init timer 
+        #self.timer.timeout.connect(self.wrapper_update)
+        #init combo box
+        self.structure_select.currentIndexChanged.connect(self.wrapper_structure_change)
+        self.instance_select.currentIndexChanged.connect(self.wrapper_instance_change)
 
+
+    """
+    Set up all labels
+    """
     def setupLabel(self):
         self.l_v_ver.setText(self.manager.version)
         self.l_v_serv_status.setText("Disconnected")
 
         self.instance_select.addItem("No instance found")
         self.structure_select.addItem("No structure found")
+        self.l_v_sync_time.setText("30")
 
         self.le_v_ip.setText(self.manager.ip)
         self.le_v_port.setText(str(self.manager.port))
@@ -55,12 +82,16 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 
         update_console(self)
 
+    #When user close windows, must unregister the instance from idasyncserver
     def closeEvent(self, event):
         (ret, err) = self.client.disconnect_instance(self.manager.name_instance)
         if ret:
             pprint(f"Failed to close instance : {err}")
         event.accept()
 
+
+    #DO NOT MODIFY/ADD/REMOVE, AUTO GENERATED WITH FORM.UI IN RESSOURCE/
+    #------------------------------------------------------------------
 
     def setupUi(self, IDASync):
         IDASync.setObjectName("IDASync")
@@ -75,14 +106,14 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.main_idasync = QtWidgets.QWidget()
         self.main_idasync.setObjectName("main_idasync")
         self.l_p_ver = QtWidgets.QLabel(self.main_idasync)
-        self.l_p_ver.setGeometry(QtCore.QRect(10, 20, 141, 21))
+        self.l_p_ver.setGeometry(QtCore.QRect(10, 20, 151, 21))
         font = QtGui.QFont()
         font.setPointSize(12)
         font.setBold(True)
         self.l_p_ver.setFont(font)
         self.l_p_ver.setObjectName("l_p_ver")
         self.l_v_ver = QtWidgets.QLabel(self.main_idasync)
-        self.l_v_ver.setGeometry(QtCore.QRect(160, 20, 261, 21))
+        self.l_v_ver.setGeometry(QtCore.QRect(180, 20, 261, 21))
         font = QtGui.QFont()
         font.setPointSize(12)
         font.setBold(True)
@@ -113,7 +144,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.l_v_serv_status.setFont(font)
         self.l_v_serv_status.setObjectName("l_v_serv_status")
         self.sync_ = QtWidgets.QTabWidget(self.main_idasync)
-        self.sync_.setGeometry(QtCore.QRect(760, 40, 781, 621))
+        self.sync_.setGeometry(QtCore.QRect(760, 40, 781, 681))
         palette = QtGui.QPalette()
         brush = QtGui.QBrush(QtGui.QColor(0, 255, 0))
         brush.setStyle(QtCore.Qt.SolidPattern)
@@ -153,10 +184,18 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.l_p_select_struct.setFont(font)
         self.l_p_select_struct.setObjectName("l_p_select_struct")
         self.p_struc_overview = QtWidgets.QTextEdit(self.sync_struct)
-        self.p_struc_overview.setGeometry(QtCore.QRect(70, 220, 661, 341))
+        self.p_struc_overview.setGeometry(QtCore.QRect(60, 190, 661, 311))
+        palette = QtGui.QPalette()
+        brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.Base, brush)
+        brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.Base, brush)
+        self.p_struc_overview.setPalette(palette)
         self.p_struc_overview.setObjectName("p_struc_overview")
         self.l_p_struc_overview = QtWidgets.QLabel(self.sync_struct)
-        self.l_p_struc_overview.setGeometry(QtCore.QRect(300, 170, 221, 21))
+        self.l_p_struc_overview.setGeometry(QtCore.QRect(290, 150, 221, 21))
         font = QtGui.QFont()
         font.setPointSize(12)
         font.setBold(True)
@@ -176,6 +215,13 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         font.setBold(True)
         self.l_v_struc_size.setFont(font)
         self.l_v_struc_size.setObjectName("l_v_struc_size")
+        self.b_import_struct = QtWidgets.QPushButton(self.sync_struct)
+        self.b_import_struct.setGeometry(QtCore.QRect(270, 550, 191, 51))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        font.setBold(True)
+        self.b_import_struct.setFont(font)
+        self.b_import_struct.setObjectName("b_import_struct")
         self.sync_.addTab(self.sync_struct, "")
         self.sync_enums = QtWidgets.QWidget()
         self.sync_enums.setObjectName("sync_enums")
@@ -216,6 +262,13 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         font.setBold(False)
         self.l_p_console.setFont(font)
         self.l_p_console.setObjectName("l_p_console")
+        self.b_update = QtWidgets.QPushButton(self.main_idasync)
+        self.b_update.setGeometry(QtCore.QRect(440, 430, 181, 51))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        font.setBold(True)
+        self.b_update.setFont(font)
+        self.b_update.setObjectName("b_update")
         self.sync_.raise_()
         self.l_p_ver.raise_()
         self.l_v_ver.raise_()
@@ -229,6 +282,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.l_v_instance.raise_()
         self.l_p_select_instance.raise_()
         self.l_p_console.raise_()
+        self.b_update.raise_()
         self.main_.addTab(self.main_idasync, "")
         self.main_opt = QtWidgets.QWidget()
         self.main_opt.setObjectName("main_opt")
@@ -260,14 +314,14 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.b_update_config.setFont(font)
         self.b_update_config.setObjectName("b_update_config")
         self.l_p_sync_time = QtWidgets.QLabel(self.main_opt)
-        self.l_p_sync_time.setGeometry(QtCore.QRect(20, 90, 141, 21))
+        self.l_p_sync_time.setGeometry(QtCore.QRect(20, 80, 181, 21))
         font = QtGui.QFont()
         font.setPointSize(12)
         font.setBold(True)
         self.l_p_sync_time.setFont(font)
         self.l_p_sync_time.setObjectName("l_p_sync_time")
         self.l_v_sync_time = QtWidgets.QTextEdit(self.main_opt)
-        self.l_v_sync_time.setGeometry(QtCore.QRect(170, 90, 171, 21))
+        self.l_v_sync_time.setGeometry(QtCore.QRect(210, 80, 171, 21))
         self.l_v_sync_time.setObjectName("l_v_sync_time")
         self.main_.addTab(self.main_opt, "")
         self.main_info = QtWidgets.QWidget()
@@ -310,17 +364,19 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.l_p_struc_overview.setText(_translate("IDASync", "Structure Overview"))
         self.l_p_struc_size.setText(_translate("IDASync", "Size : "))
         self.l_v_struc_size.setText(_translate("IDASync", "0"))
+        self.b_import_struct.setText(_translate("IDASync", "Import into DB"))
         self.sync_.setTabText(self.sync_.indexOf(self.sync_struct), _translate("IDASync", "Structure"))
         self.sync_.setTabText(self.sync_.indexOf(self.sync_enums), _translate("IDASync", "Enums"))
         self.l_p_instance.setText(_translate("IDASync", "Number of IDA instances connected : "))
         self.l_v_instance.setText(_translate("IDASync", "0"))
         self.l_p_select_instance.setText(_translate("IDASync", "Select Instance To Sync Data : "))
         self.l_p_console.setText(_translate("IDASync", "console"))
+        self.b_update.setText(_translate("IDASync", "Update From Server"))
         self.main_.setTabText(self.main_.indexOf(self.main_idasync), _translate("IDASync", "IDASync"))
         self.l_p_ip.setText(_translate("IDASync", "Listening ON :"))
         self.l_p_port.setText(_translate("IDASync", "Port : "))
         self.b_update_config.setText(_translate("IDASync", "Update CONFIG"))
-        self.l_p_sync_time.setText(_translate("IDASync", "Sync Server Time"))
+        self.l_p_sync_time.setText(_translate("IDASync", "Sync Server Time (s) :"))
         self.main_.setTabText(self.main_.indexOf(self.main_opt), _translate("IDASync", "Options"))
         self.l_p_author_2.setText(_translate("IDASync", "Bug ? Report at thibault.poncetta@gmail.com"))
         self.main_.setTabText(self.main_.indexOf(self.main_info), _translate("IDASync", "Information"))

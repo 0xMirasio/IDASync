@@ -147,7 +147,7 @@
         <x>760</x>
         <y>40</y>
         <width>781</width>
-        <height>621</height>
+        <height>681</height>
        </rect>
       </property>
       <property name="palette">
@@ -264,18 +264,45 @@
        <widget class="QTextEdit" name="p_struc_overview">
         <property name="geometry">
          <rect>
-          <x>70</x>
-          <y>220</y>
+          <x>60</x>
+          <y>190</y>
           <width>661</width>
-          <height>341</height>
+          <height>311</height>
          </rect>
+        </property>
+        <property name="palette">
+         <palette>
+          <active>
+           <colorrole role="Base">
+            <brush brushstyle="SolidPattern">
+             <color alpha="255">
+              <red>255</red>
+              <green>255</green>
+              <blue>255</blue>
+             </color>
+            </brush>
+           </colorrole>
+          </active>
+          <inactive>
+           <colorrole role="Base">
+            <brush brushstyle="SolidPattern">
+             <color alpha="255">
+              <red>255</red>
+              <green>255</green>
+              <blue>255</blue>
+             </color>
+            </brush>
+           </colorrole>
+          </inactive>
+          <disabled/>
+         </palette>
         </property>
        </widget>
        <widget class="QLabel" name="l_p_struc_overview">
         <property name="geometry">
          <rect>
-          <x>300</x>
-          <y>170</y>
+          <x>290</x>
+          <y>150</y>
           <width>221</width>
           <height>21</height>
          </rect>
@@ -326,6 +353,25 @@
         </property>
         <property name="text">
          <string>0</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="b_import_struct">
+        <property name="geometry">
+         <rect>
+          <x>270</x>
+          <y>550</y>
+          <width>191</width>
+          <height>51</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>12</pointsize>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="text">
+         <string>Import into DB</string>
         </property>
        </widget>
       </widget>
@@ -435,6 +481,25 @@
        <string>console</string>
       </property>
      </widget>
+     <widget class="QPushButton" name="b_update">
+      <property name="geometry">
+       <rect>
+        <x>440</x>
+        <y>430</y>
+        <width>181</width>
+        <height>51</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>Update From Server</string>
+      </property>
+     </widget>
      <zorder>sync_</zorder>
      <zorder>l_p_ver</zorder>
      <zorder>l_v_ver</zorder>
@@ -448,6 +513,7 @@
      <zorder>l_v_instance</zorder>
      <zorder>l_p_select_instance</zorder>
      <zorder>l_p_console</zorder>
+     <zorder>b_update</zorder>
     </widget>
     <widget class="QWidget" name="main_opt">
      <attribute name="title">
@@ -534,8 +600,8 @@
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>90</y>
-        <width>141</width>
+        <y>80</y>
+        <width>181</width>
         <height>21</height>
        </rect>
       </property>
@@ -546,14 +612,14 @@
        </font>
       </property>
       <property name="text">
-       <string>Sync Server Time</string>
+       <string>Sync Server Time (s) :</string>
       </property>
      </widget>
      <widget class="QTextEdit" name="l_v_sync_time">
       <property name="geometry">
        <rect>
-        <x>170</x>
-        <y>90</y>
+        <x>210</x>
+        <y>80</y>
         <width>171</width>
         <height>21</height>
        </rect>

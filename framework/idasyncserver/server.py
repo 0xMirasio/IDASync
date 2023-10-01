@@ -5,6 +5,9 @@ app = FastAPI()
 
 from pydantic import BaseModel
 
+PORT = 4444
+HOST= "127.0.0.1"
+
 class Instance(BaseModel):
     instance: str
 
@@ -19,6 +22,8 @@ class Server():
         self.instances = []
         self.structs_ = {}
 
+        self.ServerNewData = False
+
     def ping(self):
         return "ping_ok"
     
@@ -27,6 +32,7 @@ class Server():
             return "register_instance_ok"
         
         self.instances.append(instance)
+        self.ServerNewData = True
         return "register_instance_ok"
     
     def disconnect_instance(self, instance: str):
@@ -34,6 +40,7 @@ class Server():
             return "disconnect_instance_ok"
         
         self.instances.remove(instance)
+        self.ServerNewData = True
         return "disconnect_instance_ok"
 
     def get_instance(self):
@@ -44,6 +51,7 @@ class Server():
             return "instance_not_found"
         
         self.structs_[instance] = structs
+        self.ServerNewData = True
         return "register_structs_ok"
     
     def get_structs(self, instance):
@@ -51,6 +59,15 @@ class Server():
             return "instance_not_found"
         
         return self.structs_[instance]
+    
+    def hasNewUpdate(self):
+
+        if self.ServerNewData:
+            self.ServerNewData = False
+            return "serverHasNewUpdate"
+        else:
+            return "serverHasNoNewUpdate"
+        
 
 server_instance = Server()
 
@@ -78,9 +95,14 @@ def get_structs(instance: Instance):
 def get_instance():
     return server_instance.get_instance()
 
+@app.get("/hasNewUpdate/")
+def get_hasNewUpdate():
+    return server_instance.hasNewUpdate()
+
 def main():
     import uvicorn
-    uvicorn.run(app, host="localhost", port=4444)
+    print(f"[IDASyncServer] Running on port {HOST}:{PORT}")
+    uvicorn.run(app, host=HOST, port=PORT)
 
 if __name__ == "__main__":
     main()
