@@ -7,6 +7,7 @@ from pydantic import BaseModel
 
 PORT = 4444
 HOST= "127.0.0.1"
+DEBUG = True
 
 class Instance(BaseModel):
     instance: str
@@ -24,6 +25,12 @@ class Server():
 
         self.ServerNewData = False
 
+    def debugCurrentServerInformation(self):
+        print("[Debug] Server information")
+        print(f"[Debug] instance -> {self.instances}")
+        print(f"[Debug] Structures -> {self.structs_}")
+        print(f"[Debug] ServerNewData -> {self.ServerNewData}")
+
     def ping(self):
         return "ping_ok"
     
@@ -33,6 +40,7 @@ class Server():
         
         self.instances.append(instance)
         self.ServerNewData = True
+        
         return "register_instance_ok"
     
     def disconnect_instance(self, instance: str):
@@ -40,7 +48,11 @@ class Server():
             return "disconnect_instance_ok"
         
         self.instances.remove(instance)
+        self.structs_.pop(instance, None)
         self.ServerNewData = True
+
+        if DEBUG:
+            self.debugCurrentServerInformation()
         return "disconnect_instance_ok"
 
     def get_instance(self):
@@ -52,6 +64,7 @@ class Server():
         
         self.structs_[instance] = structs
         self.ServerNewData = True
+
         return "register_structs_ok"
     
     def get_structs(self, instance):
@@ -62,6 +75,9 @@ class Server():
     
     def hasNewUpdate(self):
 
+        if DEBUG:
+            self.debugCurrentServerInformation()
+            
         if self.ServerNewData:
             self.ServerNewData = False
             return "serverHasNewUpdate"

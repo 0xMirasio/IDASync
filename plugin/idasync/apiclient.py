@@ -52,6 +52,7 @@ class Client():
             return (1, str(e))
         
     def register_structs(self, structs, instance):
+
         try:
 
             package = {

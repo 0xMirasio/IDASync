@@ -7,6 +7,11 @@ def update_console(self):
 
     self.p_console.setText(tt_console)
 
+    #auto update console to be at last updated text (end)
+    if hasattr(self.p_console, 'verticalScrollBar'):
+        self.p_console.verticalScrollBar().setValue(self.p_console.verticalScrollBar().maximum())
+
+
 
 def toConsole(self, msg):
     self.console_.append(msg)

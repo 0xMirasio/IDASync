@@ -1,4 +1,4 @@
-from idasync.idascripts.getstruct import scripts_get_structures
+from idasync.idascripts.struct import scripts_get_structures,script_import_structure
 import json
 from idasync.api_wrapper import get_instance,ping,register_instance,register_structure,get_structure,hasChanged
 from idasync.util import toConsole,pprint
@@ -22,21 +22,27 @@ def updateStructures(self, structs, instance):
 
     self.structure_select.clear()
     self.structs_all[instance] = structs
-    for item in structs:
-        s_name = item["struct_name"]
+
+    for s_name in structs:
         self.structure_select.addItem(s_name)
     
-    fi = self.structure_select.itemText(0)
+    struct_name_user_select = self.structure_select.itemText(0)
     c_st = self.structs_all[instance]
-    for st in c_st:
-        if st["struct_name"] == fi:
-            s_size = st["size"]
-            s_members = st["members"]
-
+    for s_name in c_st:
+        if s_name == struct_name_user_select:
+            
+            memb_aligned = c_st[s_name]['data']
+            size = c_st[s_name]['size']
+            
             self.l_p_struc_size.setText("Size : ")
-            self.l_v_struc_size.setText(f"{s_size}")
+            self.l_v_struc_size.setText(f"{size}")
 
-            memb_aligned = json.dumps(s_members, indent=4)
+            #format structure to human readable
+            memb_aligned = memb_aligned.replace('{','\n{\n\t') 
+            memb_aligned = memb_aligned.replace('};','}')
+            memb_aligned = memb_aligned.replace(';',';\n\t')
+            memb_aligned = memb_aligned.replace('\t}','}')
+
             self.p_struc_overview.setText(f"{memb_aligned}")
 
     return 0
@@ -59,6 +65,8 @@ def connectRPC(self):
         self.progressBar.setValue(0)
         return -1
     
+    self.is_server_connected = True
+    
     self.progressBar.setValue(30)
     toConsole(self, "Register Instances to Server : Sucess")
     
@@ -73,8 +81,8 @@ def connectRPC(self):
     updateInstance(self, instances)
     self.l_v_instance.setText(str(len(instances)))
 
-    struct_ = scripts_get_structures()
-    ret = register_structure(self, struct_, self.manager.name_instance)
+    all_structures = scripts_get_structures()
+    ret = register_structure(self, all_structures, self.manager.name_instance)
     if ret:
         self.progressBar.setValue(0)
         return -1
@@ -95,7 +103,6 @@ def connectRPC(self):
     
     self.l_v_serv_status.setText("Connected")
     self.progressBar.setValue(100)
-    self.is_server_connected = True
 
 #main methods called when update , can be called manually or with a timer
 def update_(self):
@@ -140,15 +147,23 @@ def update_structure(self):
     structs = self.structs_all[cur_instance]
     found = False
 
-    for st in structs:
-        if st["struct_name"] == cur_struct:
+    for struct in structs:
+        if struct == cur_struct:
 
-            s_size = st["size"]
-            s_members = st["members"]
+            memb_aligned = structs[struct]['data']
+            size = structs[struct]['size']
+            
+            self.l_p_struc_size.setText("Size : ")
+            self.l_v_struc_size.setText(f"{size}")
 
-            self.l_v_struc_size.setText(f"{s_size}")
+            #format structure to human readable
+            memb_aligned = memb_aligned.replace('{','\n{\n\t') 
+            memb_aligned = memb_aligned.replace('};','}')
+            memb_aligned = memb_aligned.replace(';',';\n\t')
+            memb_aligned = memb_aligned.replace('\t}','}')
 
-            memb_aligned = json.dumps(s_members, indent=4)
+
+
             self.p_struc_overview.setText(f"{memb_aligned}")
 
             found=True
@@ -170,3 +185,32 @@ def update_property(self):
         structs = self.structs_all[cur_instance]
         updateStructures(self, structs, cur_instance)
 
+#main methods to import selected structure from user selection
+def import_struct(self):
+
+    cur_struct = self.structure_select.currentText()
+
+    if len(cur_struct) == 0 or cur_struct == "No structure found":
+        return
+    
+    cur_instance = self.instance_select.currentText()
+    if len(cur_instance) == 0 or cur_instance == "No instance found":
+        return
+    
+    toConsole(self, f"Importing structure : {cur_struct}")
+
+    s_ins = self.structs_all.get(cur_instance)
+    if not s_ins:
+        toConsole(self, f"No structures found in internal for {cur_instance}")
+        return
+
+    s_data = s_ins.get(cur_struct)
+    if not s_data:
+        toConsole(self, f"Structure : {cur_struct} not found in {cur_instance} structures")
+        return
+    
+    s_data_raw = s_data['data']
+    script_import_structure(cur_struct, s_data_raw)
+
+
+    

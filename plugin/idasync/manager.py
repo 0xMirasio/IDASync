@@ -7,11 +7,10 @@ from PyQt5.QtCore import QObject
 
 class Manager(QObject):
 
-    def __init__(self, instancied) -> None:
+    def __init__(self) -> None:
         super(Manager, self).__init__()
         
         self.gui_running = None
-        self.gui_main_instancied = instancied
         r = self.checkConfig()
         if r:
             return None
@@ -40,14 +39,6 @@ class Manager(QObject):
         return 0
 
     def start(self):
-        # do not create multiple instances
-        if not self.gui_main_instancied:
-            self.gui_start = Ui_MainWindow(self)
-            self.gui_start.show()
+        self.gui_start = Ui_MainWindow(self)
+        self.gui_start.show()
             
-        else:
-            self.gui_start.activateWindow()
-            self.gui_start.raise_()
-
-
-

@@ -104,23 +104,12 @@ def main():
 
 
     test_struct = {
-        "structs": [
-            {
-                "struct_name": "test",
+        'TestStructTestClient' : {
+                "data": "struct test  __attribute__((aligned(8))) {unsigned __int32 st_name;unsigned __int8 st_info;unsigned __int8 st_other;unsigned __int16 st_shndx;unsigned __int64 st_value;unsigned __int64 st_size;};",
                 "size": 6,
-                "members": [
-                    {
-                        "name": "field_0",
-                        "type": "word"
-                    },
-                    {
-                        "name": "field_2",
-                        "type": "dword"
-                    }
-                ]
-            }
-        ]
+        }
     }
+                
 
     (ret, err) = cli.register_structs(test_struct, "test_client")
     if ret:

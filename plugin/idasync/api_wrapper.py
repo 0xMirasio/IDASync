@@ -14,7 +14,7 @@ def ping(self):
     (ret, err) = self.client.ping()
     if ret:
         toConsole(self, f"Couldn't connect to Server : {err}")
-        toConsole(self, "You can run server with : \npython3 -m idasync runserver") 
+        toConsole(self, "You can run server with : \npython3 -m idasyncserver runserver") 
         return -1
     
     return 0
@@ -32,7 +32,7 @@ def register_instance(self, instance):
 def register_structure(self, structure, instance):
     (ret, err) = self.client.register_structs(structure, instance)
     if ret:
-        toConsole(f"Couldn't register structs to Server : {err}")
+        toConsole(self, f"Couldn't register structs to Server : {err}")
         return -1
     
 #return structures from idasyncsserver    
@@ -48,7 +48,7 @@ def get_structure(self, instance):
 def hasChanged(self):
     (ret, err, update) = self.client.server_hasNewUpdate()
     if ret:
-        toConsole(f"Couldn't gets hasChanged response from Server : {err}")
+        toConsole(self, f"Couldn't gets hasChanged response from Server : {err}")
         return {}
        
     return update

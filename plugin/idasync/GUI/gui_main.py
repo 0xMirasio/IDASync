@@ -36,16 +36,17 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
     def wrapper_connectRPC(self):
         connectRPC(self)
 
-    
     def wrapper_update(self):
-        update_(self)
-    
+        update_(self)    
 
     def wrapper_structure_change(self):
         update_structure(self)
 
     def wrapper_instance_change(self):
         update_property(self)
+
+    def wrapper_import_struct(self):
+        import_struct(self)
 
     #------------------------------
 
@@ -56,6 +57,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         #init button
         self.b_connect.clicked.connect(self.wrapper_connectRPC)
         self.b_update.clicked.connect(self.wrapper_update)
+        self.b_import_struct.clicked.connect(self.wrapper_import_struct)
         #init timer 
         #self.timer.timeout.connect(self.wrapper_update)
         #init combo box
@@ -84,9 +86,11 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 
     #When user close windows, must unregister the instance from idasyncserver
     def closeEvent(self, event):
-        (ret, err) = self.client.disconnect_instance(self.manager.name_instance)
-        if ret:
-            pprint(f"Failed to close instance : {err}")
+        if self.is_server_connected:
+            (ret, err) = self.client.disconnect_instance(self.manager.name_instance)
+            if ret:
+                pprint(f"Failed to close instance : {err}")
+                
         event.accept()
 
 

@@ -11,7 +11,7 @@ Automatic IDA instance syncing for better reverse.
 
 ### Installation
 ```
-$ python plugin/install.py
+$ python install.py
 ```
 
 **Manual installation**: 
