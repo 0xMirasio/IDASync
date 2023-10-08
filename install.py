@@ -35,7 +35,7 @@ def install(where: str) -> int:
         src = os.path.abspath(os.path.join(ROOT_DIR, file))
         dst = os.path.join(where, os.path.basename(file))
 
-        print(f'Creating "{dst}"')
+        print(f'[install.py] Creating "{dst}"')
         is_dir = os.path.isdir(src)
         if is_dir:
             shutil.copytree(src, dst, dirs_exist_ok=True)
@@ -74,7 +74,7 @@ def install_cache(cache_dir : str) -> int:
 
     update_version(src, version)
 
-    print(f'Creating "{dst}"')
+    print(f'[install.py] Creating "{dst}"')
     shutil.copy(src, dst)
 
     return 0
@@ -89,7 +89,7 @@ if __name__ == "__main__":
         ida_plugins_dir = os.path.expandvars("%APPDATA%/Hex-Rays/IDA Pro/plugins")
         cache_dir = os.path.expandvars("%APPDATA%/IDASync/")
     else:
-        print(f"Could not retrieve IDA install folder on OS {os.name}")
+        print(f"[install.py] Could not retrieve IDA install folder on OS {os.name}")
         exit(1)
 
     # make sure the "plugins" dir exists
@@ -100,13 +100,25 @@ if __name__ == "__main__":
 
     ret = install_cache(cache_dir)
     if ret == 0:
-        print("Done installed cache folder at %s" % cache_dir)
+        print("[install.py] Done installed cache folder at %s" % cache_dir)
     else:
-        print("Failed to install cache : %s", cache_dir)
+        print("[install.py] Failed to install cache : %s", cache_dir)
         sys.exit(1)
      
     ret = install(ida_plugins_dir)
     if ret == 0:
-        print("Done")
+        print("[install.py] Done Installing Plugin")
     else:
-        print("Error installing")
+        print("[install.py] Error installing")
+
+    r = input("[install.py] Would you like to install the server framework ? (idasyncserver). It is required for the plugin to run but you can install it on a custom server --> (y/n) : ")
+
+    if r != "y":
+        print("[install.py] I'm Done")
+        sys.exit(0)
+
+    os.system(f"cd {ROOT_DIR}/framework && pip install --user .")
+
+    print("If install is sucessful, you can run idasyncserver with : python3 -m idasyncserver runserver")
+    
+
