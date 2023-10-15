@@ -54,7 +54,6 @@ class Client():
     def register_structs(self, structs, instance):
 
         try:
-
             package = {
                 "data" : {
                     "structs" : structs,
@@ -69,9 +68,38 @@ class Client():
         except Exception as e:
             return (1, str(e))
         
+    def register_enums(self, enums, instance):
+
+        try:
+            package = {
+                "data" : {
+                    "enums" : enums,
+                    "instance" : instance
+                }
+            }
+            response = self.client.post(f"{self.base_url}/register_enums/", json=package)
+            if response.status_code == 200 and response.text.replace('"','') == "register_enums_ok":
+                return (0, "")
+            return (1, f"[ERROR] register_enums() failed : {response.text}")
+            
+        except Exception as e:
+            return (1, str(e))
+        
     def get_structs(self, instance):
         try:
             response = self.client.post(f"{self.base_url}/get_structs/", json={"instance": instance})
+            if response.status_code == 200:
+                result = response.json()
+                return (0, "", result)
+            
+            return (1, f"[ERROR] get_structs() failed : {response.text}", {})
+            
+        except Exception as e:
+            return (1, str(e), {})
+        
+    def get_enums(self, instance):
+        try:
+            response = self.client.post(f"{self.base_url}/get_enums/", json={"instance": instance})
             if response.status_code == 200:
                 result = response.json()
                 return (0, "", result)

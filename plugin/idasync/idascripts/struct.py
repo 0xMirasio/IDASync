@@ -3,6 +3,9 @@ import ida_struct
 import ida_typeinf
 import idautils
 
+from idasync.util import pprint
+
+
 def scripts_get_structures():
     til = ida_typeinf.get_idati()
     struct_ordinal = [ida_struct.get_struc(id).ordinal for _, id, _ in idautils.Structs()]
@@ -41,14 +44,14 @@ def script_import_structure(s_name, s_data):
         
     import_ret = ida_typeinf.idc_set_local_type(-1, s_data, ida_typeinf.PT_TYP) #add new struct to the end of the local type list
     if import_ret == idaapi.BADNODE:
-        print(f"[IDASync::struct.py] Failed to set local type for {s_name}")
+        pprint(f"Failed to set local type for {s_name}")
         return
     
     ord = ida_typeinf.import_type(til, -1, s_name) #import it
     if ord == ida_typeinf.BADORD:
-        print(f"[IDASync::struct.py] Failed to import {s_name}")
+        pprint(f"Failed to import {s_name}")
         return
         
-    print(f"[IDASync::struct.py] Importing {s_name} sucessfull")
+    pprint(f"Importing {s_name} sucessfull")
     
 

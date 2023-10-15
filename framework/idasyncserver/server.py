@@ -47,6 +47,7 @@ class Server():
     def __init__(self):
         self.instances = []
         self.structs_ = {}
+        self.enums_ = {}
         self.ServerNewData = {}
         
     def UpdateNewDataExceptInstance(self, instance_ : str):
@@ -60,6 +61,7 @@ class Server():
         print("[Debug] Server information")
         print(f"[Debug] instance -> {self.instances}")
         print(f"[Debug] Structures -> {self.structs_}")
+        print(f"[Debug] Enums -> {self.enums_}")
         print(f"[Debug] ServerNewData -> {self.ServerNewData}")
 
     def ping(self):
@@ -81,6 +83,8 @@ class Server():
         
         self.instances.remove(instance)
         self.structs_.pop(instance, None)
+        self.enums_.pop(instance, None)
+        self.ServerNewData.pop(instance, None)
         self.UpdateNewDataExceptInstance(instance)
 
         if DEBUG:
@@ -99,11 +103,26 @@ class Server():
 
         return "register_structs_ok"
     
+    def register_enums(self, enums, instance):
+        if instance not in self.instances:
+            return "instance_not_found"
+        
+        self.enums_[instance] = enums
+        self.UpdateNewDataExceptInstance(instance)
+
+        return "register_enums_ok"
+    
     def get_structs(self, instance):
         if instance not in self.structs_:
             return "instance_not_found"
         
         return self.structs_[instance]
+    
+    def get_enums(self, instance):
+        if instance not in self.enums_:
+            return "instance_not_found"
+        
+        return self.enums_[instance]
     
     def hasNewUpdate(self, instance : str):
 
@@ -138,9 +157,17 @@ def disconnect_instance(instance: Instance):
 def register_structs(package: Package):
     return server_instance.register_structs(package.data["structs"],package.data["instance"])
 
+@app.post("/register_enums/")
+def register_enums(package: Package):
+    return server_instance.register_enums(package.data["enums"],package.data["instance"])
+
 @app.post("/get_structs/")
 def get_structs(instance: Instance):
     return server_instance.get_structs(instance.instance)
+
+@app.post("/get_enums/")
+def get_enums(instance: Instance):
+    return server_instance.get_enums(instance.instance)
 
 @app.get("/get_instance/")
 def get_instance():

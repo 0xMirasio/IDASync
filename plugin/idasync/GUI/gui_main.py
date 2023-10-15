@@ -18,9 +18,10 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.manager = manager
         self.client = Client(self.manager.ip, self.manager.port)
         
-        self.console_ = ["UI_Initialised_OK"]
+        self.console_ = ["UI Inialised ✔️"]
         
         self.structs_all = {}
+        self.enums_all = {}
 
         self.timer = QTimer(self)
         self.timer.start(self.manager.update_time)
@@ -28,6 +29,9 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.setupUi(self)
         self.setupAction()
         self.setupLabel()
+
+        self.main_.setCurrentIndex(0) # set main first tab pannel
+        self.sync_.setCurrentIndex(0) # set main::symbols tab pannel
 
         self.is_server_connected = False
 
@@ -47,11 +51,17 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
     def wrapper_structure_change(self):
         update_structure(self)
 
+    def wrapper_enum_change(self):
+        update_enum(self)
+
     def wrapper_instance_change(self):
         update_property(self)
 
     def wrapper_import_struct(self):
         import_struct(self)
+
+    def wrapper_import_enum(self):
+        import_enum(self)
         
     def wrapper_update_config(self):
         update_config(self)
@@ -66,11 +76,13 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.b_connect.clicked.connect(self.wrapper_connectRPC)
         self.b_update.clicked.connect(self.wrapper_update_force_connect)
         self.b_import_struct.clicked.connect(self.wrapper_import_struct)
+        self.b_import_enum.clicked.connect(self.wrapper_import_enum)
         self.b_update_config.clicked.connect(self.wrapper_update_config)
         #init timer 
         self.timer.timeout.connect(self.wrapper_update)
         #init combo box
         self.structure_select.currentIndexChanged.connect(self.wrapper_structure_change)
+        self.enum_select.currentIndexChanged.connect(self.wrapper_enum_change)
         self.instance_select.currentIndexChanged.connect(self.wrapper_instance_change)
 
 
@@ -83,6 +95,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 
         self.instance_select.addItem("No instance found")
         self.structure_select.addItem("No structure found")
+        self.enum_select.addItem("No Enum found")
         self.l_v_sync_time.setText(str(self.manager.update_time))
 
         self.le_v_ip.setText(self.manager.ip)
@@ -240,6 +253,55 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.sync_.addTab(self.sync_struct, "")
         self.sync_enums = QtWidgets.QWidget()
         self.sync_enums.setObjectName("sync_enums")
+        self.l_p_select_enum = QtWidgets.QLabel(self.sync_enums)
+        self.l_p_select_enum.setGeometry(QtCore.QRect(40, 20, 221, 21))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        font.setBold(True)
+        self.l_p_select_enum.setFont(font)
+        self.l_p_select_enum.setObjectName("l_p_select_enum")
+        self.enum_select = QtWidgets.QComboBox(self.sync_enums)
+        self.enum_select.setGeometry(QtCore.QRect(50, 70, 391, 61))
+        self.enum_select.setObjectName("enum_select")
+        self.l_p_enum_size = QtWidgets.QLabel(self.sync_enums)
+        self.l_p_enum_size.setGeometry(QtCore.QRect(480, 90, 71, 21))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        font.setBold(True)
+        self.l_p_enum_size.setFont(font)
+        self.l_p_enum_size.setObjectName("l_p_enum_size")
+        self.l_v_enum_size = QtWidgets.QLabel(self.sync_enums)
+        self.l_v_enum_size.setGeometry(QtCore.QRect(570, 90, 71, 21))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        font.setBold(True)
+        self.l_v_enum_size.setFont(font)
+        self.l_v_enum_size.setObjectName("l_v_enum_size")
+        self.l_p_enum_overview = QtWidgets.QLabel(self.sync_enums)
+        self.l_p_enum_overview.setGeometry(QtCore.QRect(300, 170, 221, 21))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        font.setBold(True)
+        self.l_p_enum_overview.setFont(font)
+        self.l_p_enum_overview.setObjectName("l_p_enum_overview")
+        self.p_enum_overview = QtWidgets.QTextEdit(self.sync_enums)
+        self.p_enum_overview.setGeometry(QtCore.QRect(60, 210, 661, 311))
+        palette = QtGui.QPalette()
+        brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.Base, brush)
+        brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.Base, brush)
+        self.p_enum_overview.setPalette(palette)
+        self.p_enum_overview.setObjectName("p_enum_overview")
+        self.b_import_enum = QtWidgets.QPushButton(self.sync_enums)
+        self.b_import_enum.setGeometry(QtCore.QRect(270, 570, 191, 51))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        font.setBold(True)
+        self.b_import_enum.setFont(font)
+        self.b_import_enum.setObjectName("b_import_enum")
         self.sync_.addTab(self.sync_enums, "")
         self.progressBar = QtWidgets.QProgressBar(self.main_idasync)
         self.progressBar.setGeometry(QtCore.QRect(400, 240, 291, 31))
@@ -278,7 +340,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.l_p_console.setFont(font)
         self.l_p_console.setObjectName("l_p_console")
         self.b_update = QtWidgets.QPushButton(self.main_idasync)
-        self.b_update.setGeometry(QtCore.QRect(440, 430, 181, 51))
+        self.b_update.setGeometry(QtCore.QRect(410, 440, 241, 71))
         font = QtGui.QFont()
         font.setPointSize(12)
         font.setBold(True)
@@ -329,14 +391,14 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.b_update_config.setFont(font)
         self.b_update_config.setObjectName("b_update_config")
         self.l_p_sync_time = QtWidgets.QLabel(self.main_opt)
-        self.l_p_sync_time.setGeometry(QtCore.QRect(20, 80, 181, 21))
+        self.l_p_sync_time.setGeometry(QtCore.QRect(20, 80, 191, 21))
         font = QtGui.QFont()
         font.setPointSize(12)
         font.setBold(True)
         self.l_p_sync_time.setFont(font)
         self.l_p_sync_time.setObjectName("l_p_sync_time")
         self.l_v_sync_time = QtWidgets.QTextEdit(self.main_opt)
-        self.l_v_sync_time.setGeometry(QtCore.QRect(210, 80, 171, 21))
+        self.l_v_sync_time.setGeometry(QtCore.QRect(220, 80, 171, 21))
         self.l_v_sync_time.setObjectName("l_v_sync_time")
         self.main_.addTab(self.main_opt, "")
         self.main_info = QtWidgets.QWidget()
@@ -348,6 +410,20 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         font.setBold(True)
         self.l_p_author_2.setFont(font)
         self.l_p_author_2.setObjectName("l_p_author_2")
+        self.l_p_author_3 = QtWidgets.QLabel(self.main_info)
+        self.l_p_author_3.setGeometry(QtCore.QRect(520, 280, 591, 21))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        font.setBold(True)
+        self.l_p_author_3.setFont(font)
+        self.l_p_author_3.setObjectName("l_p_author_3")
+        self.l_p_author_4 = QtWidgets.QLabel(self.main_info)
+        self.l_p_author_4.setGeometry(QtCore.QRect(630, 350, 301, 21))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        font.setBold(True)
+        self.l_p_author_4.setFont(font)
+        self.l_p_author_4.setObjectName("l_p_author_4")
         self.main_.addTab(self.main_info, "")
         IDASync.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(IDASync)
@@ -362,8 +438,8 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.menubar.addAction(self.menuExit.menuAction())
 
         self.retranslateUi(IDASync)
-        self.main_.setCurrentIndex(0)
-        self.sync_.setCurrentIndex(1)
+        self.main_.setCurrentIndex(2)
+        self.sync_.setCurrentIndex(2)
         QtCore.QMetaObject.connectSlotsByName(IDASync)
 
     def retranslateUi(self, IDASync):
@@ -381,18 +457,26 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.l_v_struc_size.setText(_translate("IDASync", "0"))
         self.b_import_struct.setText(_translate("IDASync", "Import into DB"))
         self.sync_.setTabText(self.sync_.indexOf(self.sync_struct), _translate("IDASync", "Structure"))
+        self.l_p_select_enum.setText(_translate("IDASync", "Select a Enum"))
+        self.l_p_enum_size.setText(_translate("IDASync", "Size : "))
+        self.l_v_enum_size.setText(_translate("IDASync", "0"))
+        self.l_p_enum_overview.setText(_translate("IDASync", "Enum Members"))
+        self.b_import_enum.setText(_translate("IDASync", "Import into DB"))
         self.sync_.setTabText(self.sync_.indexOf(self.sync_enums), _translate("IDASync", "Enums"))
         self.l_p_instance.setText(_translate("IDASync", "Number of IDA instances connected : "))
         self.l_v_instance.setText(_translate("IDASync", "0"))
         self.l_p_select_instance.setText(_translate("IDASync", "Select Instance To Sync Data : "))
         self.l_p_console.setText(_translate("IDASync", "console"))
-        self.b_update.setText(_translate("IDASync", "Update From Server"))
+        self.b_update.setText(_translate("IDASync", "Force Update From Server"))
         self.main_.setTabText(self.main_.indexOf(self.main_idasync), _translate("IDASync", "IDASync"))
         self.l_p_ip.setText(_translate("IDASync", "Listening ON :"))
         self.l_p_port.setText(_translate("IDASync", "Port : "))
         self.b_update_config.setText(_translate("IDASync", "Update CONFIG"))
-        self.l_p_sync_time.setText(_translate("IDASync", "Sync Server Time (s) :"))
+        self.l_p_sync_time.setText(_translate("IDASync", "Sync Server Time (ms) :"))
         self.main_.setTabText(self.main_.indexOf(self.main_opt), _translate("IDASync", "Options"))
         self.l_p_author_2.setText(_translate("IDASync", "Bug ? Report at thibault.poncetta@gmail.com"))
+        self.l_p_author_3.setText(_translate("IDASync", "or create an issue at : https://github.com/0xMirasio/IDASync"))
+        self.l_p_author_4.setText(_translate("IDASync", "All Pull Requests are welcomed"))
         self.main_.setTabText(self.main_.indexOf(self.main_info), _translate("IDASync", "Information"))
         self.menuExit.setTitle(_translate("IDASync", "Exit"))
+

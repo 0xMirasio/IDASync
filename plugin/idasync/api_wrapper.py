@@ -35,6 +35,13 @@ def register_structure(self, structure, instance):
         toConsole(self, f"Couldn't register structs to Server : {err}")
         return -1
     
+#registers enums to idasyncsserver
+def register_enums(self, enums, instance):
+    (ret, err) = self.client.register_enums(enums, instance)
+    if ret:
+        toConsole(self, f"Couldn't register enums to Server : {err}")
+        return -1
+    
 #return structures from idasyncsserver    
 def get_structure(self, instance):
     (ret, err, structs) = self.client.get_structs(instance)
@@ -43,6 +50,15 @@ def get_structure(self, instance):
         return {}
     
     return structs
+
+#return enums from idasyncsserver    
+def get_enums(self, instance):
+    (ret, err, enums) = self.client.get_enums(instance)
+    if ret:
+        toConsole(f"Couldn't gets enums from Server : {err}")
+        return {}
+    
+    return enums
 
 #return boolean value if server has new value in memory
 def hasChanged(self, instance):

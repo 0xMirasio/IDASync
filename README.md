@@ -3,9 +3,8 @@
 Automatic IDA instance syncing for better reverse.
 
 ### Features
-* Connect multi IDA instance to a local server to sync Enumn, Structure, Symbol
-* Sync Signature information (fonction header)
-* Sync Code
+* Connect multi IDA instance to a local server to sync Enum, Structure, Symbol
+* Sync Signature information (function header)
 * Allow multiple users to work on differents instances and sync data. 
 
 
@@ -21,19 +20,22 @@ $ python install.py
 
 ### Usage
 
-Server must be run before using the plugin : **python3 -m idasync runserver** or **idasync runserver**
+Server must be run before using the plugin : **python3 -m idasyncserver** or **idasyncserver**
+You can install it on a custom server, then modify config.json to connect to it with others users.
 
 Use **CTRL+Shift+F3** in IDA to connect to server.
-* see ```config.json``` - configuration to be used
+* see [config.json](config.json) - configuration to be used
     * config.json can be updated in parameters tab in plugins GUI
-    * installing a newest version of plugin will erase old config.json file in cache folder
+        - IP : ip to connect
+        - Port : port to connect
+        - Update Timing : Time between sync with server. If you have issues with syncing with server (lag, freeze etc), rise the update timing value to fix the problem (can happen with laggy server)
 
-For functionality, see ressource/paper.pdf
+
+For tutorial/exemple, see [ressource/example.md](ressource/example.md)
 
 ## TODO : 
 
-* test linux support
-* create test_binaries/ with multiple architectures for testing
+see [PLAN.md](PLAN.md)
 
 ## Support
 

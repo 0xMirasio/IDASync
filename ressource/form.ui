@@ -30,7 +30,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="main_idasync">
      <attribute name="title">
@@ -221,7 +221,7 @@
        <enum>QTabWidget::Triangular</enum>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -379,6 +379,148 @@
        <attribute name="title">
         <string>Enums</string>
        </attribute>
+       <widget class="QLabel" name="l_p_select_enum">
+        <property name="geometry">
+         <rect>
+          <x>40</x>
+          <y>20</y>
+          <width>221</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>12</pointsize>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="text">
+         <string>Select a Enum</string>
+        </property>
+       </widget>
+       <widget class="QComboBox" name="enum_select">
+        <property name="geometry">
+         <rect>
+          <x>50</x>
+          <y>70</y>
+          <width>391</width>
+          <height>61</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QLabel" name="l_p_enum_size">
+        <property name="geometry">
+         <rect>
+          <x>480</x>
+          <y>90</y>
+          <width>71</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>12</pointsize>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="text">
+         <string>Size : </string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="l_v_enum_size">
+        <property name="geometry">
+         <rect>
+          <x>570</x>
+          <y>90</y>
+          <width>71</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>12</pointsize>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="text">
+         <string>0</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="l_p_enum_overview">
+        <property name="geometry">
+         <rect>
+          <x>300</x>
+          <y>170</y>
+          <width>221</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>12</pointsize>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="text">
+         <string>Enum Members</string>
+        </property>
+       </widget>
+       <widget class="QTextEdit" name="p_enum_overview">
+        <property name="geometry">
+         <rect>
+          <x>60</x>
+          <y>210</y>
+          <width>661</width>
+          <height>311</height>
+         </rect>
+        </property>
+        <property name="palette">
+         <palette>
+          <active>
+           <colorrole role="Base">
+            <brush brushstyle="SolidPattern">
+             <color alpha="255">
+              <red>255</red>
+              <green>255</green>
+              <blue>255</blue>
+             </color>
+            </brush>
+           </colorrole>
+          </active>
+          <inactive>
+           <colorrole role="Base">
+            <brush brushstyle="SolidPattern">
+             <color alpha="255">
+              <red>255</red>
+              <green>255</green>
+              <blue>255</blue>
+             </color>
+            </brush>
+           </colorrole>
+          </inactive>
+          <disabled/>
+         </palette>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="b_import_enum">
+        <property name="geometry">
+         <rect>
+          <x>270</x>
+          <y>570</y>
+          <width>191</width>
+          <height>51</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>12</pointsize>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="text">
+         <string>Import into DB</string>
+        </property>
+       </widget>
       </widget>
      </widget>
      <widget class="QProgressBar" name="progressBar">
@@ -484,10 +626,10 @@
      <widget class="QPushButton" name="b_update">
       <property name="geometry">
        <rect>
-        <x>440</x>
-        <y>430</y>
-        <width>181</width>
-        <height>51</height>
+        <x>410</x>
+        <y>440</y>
+        <width>241</width>
+        <height>71</height>
        </rect>
       </property>
       <property name="font">
@@ -497,7 +639,7 @@
        </font>
       </property>
       <property name="text">
-       <string>Update From Server</string>
+       <string>Force Update From Server</string>
       </property>
      </widget>
      <zorder>sync_</zorder>
@@ -647,6 +789,44 @@
       </property>
       <property name="text">
        <string>Bug ? Report at thibault.poncetta@gmail.com</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="l_p_author_3">
+      <property name="geometry">
+       <rect>
+        <x>520</x>
+        <y>280</y>
+        <width>591</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>or create an issue at : https://github.com/0xMirasio/IDASync</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="l_p_author_4">
+      <property name="geometry">
+       <rect>
+        <x>630</x>
+        <y>350</y>
+        <width>301</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>All Pull Requests are welcomed</string>
       </property>
      </widget>
     </widget>
