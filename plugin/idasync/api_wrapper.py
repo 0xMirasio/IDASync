@@ -45,8 +45,8 @@ def get_structure(self, instance):
     return structs
 
 #return boolean value if server has new value in memory
-def hasChanged(self):
-    (ret, err, update) = self.client.server_hasNewUpdate()
+def hasChanged(self, instance):
+    (ret, err, update) = self.client.server_hasNewUpdate(instance)
     if ret:
         toConsole(self, f"Couldn't gets hasChanged response from Server : {err}")
         return {}

@@ -38,8 +38,11 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
     def wrapper_connectRPC(self):
         connectRPC(self)
 
+    def wrapper_update_force_connect(self):
+        update_(self, force_update=True)    
+
     def wrapper_update(self):
-        update_(self)    
+        update_(self)  
 
     def wrapper_structure_change(self):
         update_structure(self)
@@ -61,7 +64,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
     def setupAction(self):
         #init button
         self.b_connect.clicked.connect(self.wrapper_connectRPC)
-        self.b_update.clicked.connect(self.wrapper_update)
+        self.b_update.clicked.connect(self.wrapper_update_force_connect)
         self.b_import_struct.clicked.connect(self.wrapper_import_struct)
         self.b_update_config.clicked.connect(self.wrapper_update_config)
         #init timer 

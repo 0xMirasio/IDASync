@@ -81,9 +81,10 @@ class Client():
         except Exception as e:
             return (1, str(e), {})
         
-    def server_hasNewUpdate(self):
+    def server_hasNewUpdate(self, instance):
         try:
-            response = self.client.get(f"{self.base_url}/hasNewUpdate/")
+
+            response = self.client.post(f"{self.base_url}/hasNewUpdate/", json={"instance": instance})
             if response.status_code == 200:
                 if response.text.replace('"','') == "serverHasNewUpdate":
                     return (0, "", 1)

@@ -47,8 +47,14 @@ class Server():
     def __init__(self):
         self.instances = []
         self.structs_ = {}
+        self.ServerNewData = {}
+        
+    def UpdateNewDataExceptInstance(self, instance_ : str):
 
-        self.ServerNewData = False
+        for inst in self.instances:
+            if inst == instance_:
+                continue
+            self.ServerNewData[inst] = True
 
     def debugCurrentServerInformation(self):
         print("[Debug] Server information")
@@ -64,7 +70,8 @@ class Server():
             return "register_instance_ok"
         
         self.instances.append(instance)
-        self.ServerNewData = True
+        self.ServerNewData[instance] = False
+        self.UpdateNewDataExceptInstance(instance)
         
         return "register_instance_ok"
     
@@ -74,7 +81,7 @@ class Server():
         
         self.instances.remove(instance)
         self.structs_.pop(instance, None)
-        self.ServerNewData = True
+        self.UpdateNewDataExceptInstance(instance)
 
         if DEBUG:
             self.debugCurrentServerInformation()
@@ -88,7 +95,7 @@ class Server():
             return "instance_not_found"
         
         self.structs_[instance] = structs
-        self.ServerNewData = True
+        self.UpdateNewDataExceptInstance(instance)
 
         return "register_structs_ok"
     
@@ -98,13 +105,16 @@ class Server():
         
         return self.structs_[instance]
     
-    def hasNewUpdate(self):
+    def hasNewUpdate(self, instance : str):
 
         if DEBUG:
             self.debugCurrentServerInformation()
             
-        if self.ServerNewData:
-            self.ServerNewData = False
+        if instance not in self.ServerNewData:
+            return "instance_not_found"
+        
+        if self.ServerNewData[instance]:
+            self.ServerNewData[instance] = False
             return "serverHasNewUpdate"
         else:
             return "serverHasNoNewUpdate"
@@ -136,9 +146,9 @@ def get_structs(instance: Instance):
 def get_instance():
     return server_instance.get_instance()
 
-@app.get("/hasNewUpdate/")
-def get_hasNewUpdate():
-    return server_instance.hasNewUpdate()
+@app.post("/hasNewUpdate/")
+def get_hasNewUpdate(instance: Instance):
+    return server_instance.hasNewUpdate(instance.instance)
 
 def main():
     import uvicorn

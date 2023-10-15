@@ -108,12 +108,12 @@ def connectRPC(self):
     self.progressBar.setValue(100)
 
 #main methods called when update , can be called manually or with a timer
-def update_(self):
+def update_(self, force_update=False):
 
     if self.is_server_connected == False:
         return
     
-    if not hasChanged(self):
+    if not hasChanged(self, self.manager.name_instance) and not force_update:
         return
     
     pprint("Server has new data. Updating...")
