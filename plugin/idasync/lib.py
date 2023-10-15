@@ -1,7 +1,10 @@
 from idasync.idascripts.struct import scripts_get_structures,script_import_structure
-import json
 from idasync.api_wrapper import get_instance,ping,register_instance,register_structure,get_structure,hasChanged
 from idasync.util import toConsole,pprint
+from idasync.apiclient import Client
+
+import os
+import json
 
 #Updates instances for qcombox of user selection
 def updateInstance(self, instances):
@@ -213,4 +216,53 @@ def import_struct(self):
     script_import_structure(cur_struct, s_data_raw)
 
 
+#main methods to update config.json with user settings
+def update_config(self):
+    if os.name == "posix":
+        cache_dir = os.path.expandvars("/$HOME/.idasync/")
+    elif os.name == "nt":
+        cache_dir = os.path.expandvars("%APPDATA%/IDASync/")
+    else:
+        return
     
+    config = os.path.join(cache_dir, "config.json")
+    if not os.path.exists(config):
+        pprint("[Error] Config file not found: %s" % config)
+        return
+    
+    currentIP = self.le_v_ip.toPlainText()
+    currentPort = self.le_v_port.toPlainText()
+    currentTiming = self.l_v_sync_time.toPlainText()
+
+    currentPortCasted = None
+    try:
+        currentPortCasted = int(currentPort)
+    except Exception as e:
+        pprint("[Error] couldn't cast port to int -> {} -> {}".format(currentPort, e))
+        return
+    
+    currentTimingCasted = None
+    try:
+        currentTimingCasted = int(currentTiming)
+    except Exception as e:
+        pprint("[Error] couldn't cast timing to int -> {} -> {}".format(currentTiming, e))
+        return
+
+    with open(config, 'r') as file:
+        data = json.load(file)
+        file.close()
+
+    data['ip'] = currentIP
+    data['port'] = currentPortCasted
+    data['update_time'] = currentTimingCasted
+
+    data_ = json.dumps(data, indent=4)
+
+    with open(config, 'w') as file:
+        file.write(data_)
+        file.close()
+
+    pprint("Sucessfully dumped user settings to config : {} | Reload Plugin to apply new config".format(config))
+
+    self.ip = data['ip']
+    self.port = data['port']

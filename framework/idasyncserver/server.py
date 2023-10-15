@@ -2,11 +2,10 @@ from fastapi import FastAPI
 from typing import List, Optional
 
 app = FastAPI()
-
+import os
 from pydantic import BaseModel
+import json
 
-PORT = 4444
-HOST= "127.0.0.1"
 DEBUG = True
 
 class Instance(BaseModel):
@@ -17,6 +16,32 @@ class Structs(BaseModel):
 
 class Package(BaseModel):
     data: dict
+
+
+def getConfig():
+    if os.name == "posix":
+        cache_dir = os.path.expandvars("/$HOME/.idasync/")
+    elif os.name == "nt":
+        cache_dir = os.path.expandvars("%APPDATA%/IDASync/")
+    else:
+        raise Exception("Unknow/Unsupported OS : %s" % os.name)
+    
+    config = os.path.join(cache_dir, "config.json")
+    if not os.path.exists(config):
+        raise Exception("Config file not found: %s" % config)
+    
+    print("Found config file: %s" % config)
+    
+    with open(config, 'r') as file:
+        data = json.load(file)
+
+    port = data["port"]
+    ip = data["ip"]
+
+    return ip,port
+        
+    
+
 
 class Server():
     def __init__(self):
@@ -117,8 +142,10 @@ def get_hasNewUpdate():
 
 def main():
     import uvicorn
-    print(f"[IDASyncServer] Running on port {HOST}:{PORT}")
-    uvicorn.run(app, host=HOST, port=PORT)
+    host_, port_ = getConfig()
+
+    print(f"[IDASyncServer] Running on port {host_}:{port_}")
+    uvicorn.run(app, host=host_, port=port_)
 
 if __name__ == "__main__":
     main()

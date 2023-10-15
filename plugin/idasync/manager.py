@@ -10,9 +10,8 @@ class Manager(QObject):
     def __init__(self) -> None:
         super(Manager, self).__init__()
         
-        self.gui_running = None
-        r = self.checkConfig()
-        if r:
+        config_ret = self.checkConfig()
+        if config_ret:
             return None
         
         self.name_instance = ida_nalt.get_root_filename()
@@ -33,9 +32,12 @@ class Manager(QObject):
         with open(config, 'r') as file:
             data = json.load(file)
         
-        self.version = data["version"]
-        self.port = data["port"]
-        self.ip = data["ip"]
+        self.version = data.get("version")
+        assert self.version
+        
+        self.port = data.get("port", 4446)
+        self.ip = data.get("ip", "127.0.0.1")
+        self.update_time = data.get("update_time", 3000)
         return 0
 
     def start(self):

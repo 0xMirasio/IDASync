@@ -30,7 +30,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="main_idasync">
      <attribute name="title">
@@ -601,7 +601,7 @@
        <rect>
         <x>20</x>
         <y>80</y>
-        <width>181</width>
+        <width>191</width>
         <height>21</height>
        </rect>
       </property>
@@ -612,13 +612,13 @@
        </font>
       </property>
       <property name="text">
-       <string>Sync Server Time (s) :</string>
+       <string>Sync Server Time (ms) :</string>
       </property>
      </widget>
      <widget class="QTextEdit" name="l_v_sync_time">
       <property name="geometry">
        <rect>
-        <x>210</x>
+        <x>220</x>
         <y>80</y>
         <width>171</width>
         <height>21</height>

@@ -9,11 +9,11 @@ __pycache__/
 *.nam
 *.id1
 *.id2
-
+*.id0
 # C extensions
 *.so
 *.o
-
+main
 # Distribution / packaging
 .Python
 build/

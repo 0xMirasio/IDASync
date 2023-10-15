@@ -3,8 +3,8 @@ import httpx
 from idasync.util import pprint
 
 class Client():
-    def __init__(self) -> None:
-        self.base_url = "http://localhost:4444"
+    def __init__(self, ip, port) -> None:
+        self.base_url = f"http://{ip}:{port}"
         self.client = httpx.Client()
         
 

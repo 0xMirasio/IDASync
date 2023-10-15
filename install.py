@@ -17,6 +17,11 @@ import json
 ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
 INSTALL = ["plugin/idasync.py", "plugin/idasync"]
 
+#### Debug
+ERASE_CONFIG = True
+PACKAGE_DONT_INSTALL = True
+#####
+
 config = "config.json"
 
 def install(where: str) -> int:
@@ -59,28 +64,29 @@ def update_version(config, version):
 
 def install_cache(cache_dir : str) -> int:
 
-    # Remove old files
-    base = os.path.basename(config)
-    if os.path.exists(os.path.join(cache_dir, base)):
-        dst = os.path.join(cache_dir, os.path.basename(config))
-        os.remove(dst)
 
     v_src = os.path.abspath(os.path.join(ROOT_DIR, "VERSION"))
     version = open(v_src,"r").read()
-    
 
     src = os.path.abspath(os.path.join(ROOT_DIR, config))
-    dst = os.path.join(cache_dir, os.path.basename(config))
+    dst = os.path.join(cache_dir, config)
 
-    update_version(src, version)
+    # Remove old files
+    base = os.path.basename(config)
+    if os.path.exists(dst) and not ERASE_CONFIG:
+        print("[install.py] Found existing config.json, Not removing")
+        update_version(dst, version)
+        
+    else:
 
-    print(f'[install.py] Creating "{dst}"')
-    shutil.copy(src, dst)
+        update_version(src, version)
+        print(f'[install.py] Creating "{dst}"')
+        shutil.copy(src, dst)
 
     return 0
 
 
-if __name__ == "__main__":
+def main():
     # find IDA installation
     if os.name == "posix":
         ida_plugins_dir = os.path.expandvars("/$HOME/.idapro/plugins")
@@ -111,14 +117,19 @@ if __name__ == "__main__":
     else:
         print("[install.py] Error installing")
 
+    if PACKAGE_DONT_INSTALL:
+        return
+    
     r = input("[install.py] Would you like to install the server framework ? (idasyncserver). It is required for the plugin to run but you can install it on a custom server --> (y/n) : ")
 
     if r != "y":
         print("[install.py] I'm Done")
-        sys.exit(0)
+        return
 
     os.system(f"cd {ROOT_DIR}/framework && pip install --user .")
 
-    print("If install is sucessful, you can run idasyncserver with : python3 -m idasyncserver runserver")
+    print("If install is sucessful, you can run idasyncserver with : python3 -m idasyncserver")
     
 
+if __name__ == "__main__":
+    main()

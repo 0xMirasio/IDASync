@@ -8,26 +8,28 @@ from idasync.apiclient import Client
 from idasync.lib import *
 from PyQt5.QtCore import QTimer
 
+
+
 class Ui_MainWindow(QtWidgets.QMainWindow):
     
     def __init__(self, manager):
         parent = idaapi.PluginForm.FormToPyQtWidget(ida_kernwin.get_current_widget())
         super().__init__(parent)
         self.manager = manager
-        self.client = Client()
+        self.client = Client(self.manager.ip, self.manager.port)
         
         self.console_ = ["UI_Initialised_OK"]
         
         self.structs_all = {}
+
+        self.timer = QTimer(self)
+        self.timer.start(self.manager.update_time)
 
         self.setupUi(self)
         self.setupAction()
         self.setupLabel()
 
         self.is_server_connected = False
-
-        #self.timer = QTimer(self)
-        #self.timer.start(30000) #update every 30s, < can lag ida
 
         self.menuExit.aboutToShow.connect(self.close)
 
@@ -47,6 +49,9 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 
     def wrapper_import_struct(self):
         import_struct(self)
+        
+    def wrapper_update_config(self):
+        update_config(self)
 
     #------------------------------
 
@@ -58,8 +63,9 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.b_connect.clicked.connect(self.wrapper_connectRPC)
         self.b_update.clicked.connect(self.wrapper_update)
         self.b_import_struct.clicked.connect(self.wrapper_import_struct)
+        self.b_update_config.clicked.connect(self.wrapper_update_config)
         #init timer 
-        #self.timer.timeout.connect(self.wrapper_update)
+        self.timer.timeout.connect(self.wrapper_update)
         #init combo box
         self.structure_select.currentIndexChanged.connect(self.wrapper_structure_change)
         self.instance_select.currentIndexChanged.connect(self.wrapper_instance_change)
@@ -74,7 +80,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 
         self.instance_select.addItem("No instance found")
         self.structure_select.addItem("No structure found")
-        self.l_v_sync_time.setText("30")
+        self.l_v_sync_time.setText(str(self.manager.update_time))
 
         self.le_v_ip.setText(self.manager.ip)
         self.le_v_port.setText(str(self.manager.port))
@@ -86,6 +92,8 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 
     #When user close windows, must unregister the instance from idasyncserver
     def closeEvent(self, event):
+
+        self.timer.stop()
         if self.is_server_connected:
             (ret, err) = self.client.disconnect_instance(self.manager.name_instance)
             if ret:
