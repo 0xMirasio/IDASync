@@ -3,8 +3,8 @@
 ## Incoming / Hot priority
 
 - test linux support
-- add symbols/signature sync
-- autoSend new struct/enum/symbols to server
+- AutoRegister new enums/symbols/structs
+- Get struct & enum from local type
 
 ## Todo / Low priority
 

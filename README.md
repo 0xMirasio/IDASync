@@ -31,8 +31,6 @@ Use **CTRL+Shift+F3** in IDA to connect to server.
         - Update Timing : Time between sync with server. If you have issues with syncing with server (lag, freeze etc), rise the update timing value to fix the problem (can happen with laggy server)
 
 
-For tutorial/exemple, see [ressource/example.md](ressource/example.md)
-
 ## TODO : 
 
 see [PLAN.md](PLAN.md)
@@ -42,10 +40,10 @@ see [PLAN.md](PLAN.md)
 Tested on : 
 * Windows x64
 
-**Tested on IDA Pro 7.7 but should work with any IDA Pro 7.X+**
-**Tested on Python 3.10 but should work with any Python 3.X+**
+**Tested on IDA Pro 7.7 | 8.3 but should work with any IDA Pro 7.X, 8.X**  
+**Tested on Python 3.10 & 3.11 but should work with any Python 3.X+**  
 
 ## Disclaimer
-IDASync is still in development and might not fit every use cases.
-This project is the v2 of IDAAutoResolv , reworked and largly extended.
+IDASync is still in development and might not fit every use cases.  
+This project is the v2 of IDAAutoResolv , reworked and largly extended.  
 

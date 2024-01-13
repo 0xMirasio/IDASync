@@ -11,8 +11,6 @@ def update_console(self):
     if hasattr(self.p_console, 'verticalScrollBar'):
         self.p_console.verticalScrollBar().setValue(self.p_console.verticalScrollBar().maximum())
 
-
-
 def toConsole(self, msg):
     self.console_.append(msg)
     update_console(self)

@@ -2,26 +2,27 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 import ida_kernwin
 import idaapi
 
-
 from idasync.util import pprint,update_console
 from idasync.apiclient import Client
 from idasync.lib import *
+from idasync.lib import Core
 from PyQt5.QtCore import QTimer
-
 
 
 class Ui_MainWindow(QtWidgets.QMainWindow):
     
-    def __init__(self, manager):
+    def __init__(self, manager) -> None:
         parent = idaapi.PluginForm.FormToPyQtWidget(ida_kernwin.get_current_widget())
         super().__init__(parent)
         self.manager = manager
         self.client = Client(self.manager.ip, self.manager.port)
+        self.core = Core(self)
         
         self.console_ = ["UI Inialised ✔️"]
         
         self.structs_all = {}
         self.enums_all = {}
+        self.symbols_all = {}
 
         self.timer = QTimer(self)
         self.timer.start(self.manager.update_time)
@@ -34,68 +35,42 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.sync_.setCurrentIndex(0) # set main::symbols tab pannel
 
         self.is_server_connected = False
-
         self.menuExit.aboutToShow.connect(self.close)
 
-    #wrapper for gui_client
-    #------------------------
-    def wrapper_connectRPC(self):
-        connectRPC(self)
-
     def wrapper_update_force_connect(self):
-        update_(self, force_update=True)    
-
-    def wrapper_update(self):
-        update_(self)  
-
-    def wrapper_structure_change(self):
-        update_structure(self)
-
-    def wrapper_enum_change(self):
-        update_enum(self)
-
-    def wrapper_instance_change(self):
-        update_property(self)
-
-    def wrapper_import_struct(self):
-        import_struct(self)
-
-    def wrapper_import_enum(self):
-        import_enum(self)
-        
-    def wrapper_update_config(self):
-        update_config(self)
-
-    #------------------------------
+        self.core.update_(force_update=True)    
 
     """
     Set up all actions & Buttons
     """
-    def setupAction(self):
+    def setupAction(self) -> None:
         #init button
-        self.b_connect.clicked.connect(self.wrapper_connectRPC)
+        self.b_connect.clicked.connect(self.core.connectRPC)
         self.b_update.clicked.connect(self.wrapper_update_force_connect)
-        self.b_import_struct.clicked.connect(self.wrapper_import_struct)
-        self.b_import_enum.clicked.connect(self.wrapper_import_enum)
-        self.b_update_config.clicked.connect(self.wrapper_update_config)
+        self.b_import_struct.clicked.connect(self.core.import_struct)
+        self.b_import_enum.clicked.connect(self.core.import_enum)
+        self.b_import_symbol.clicked.connect(self.core.import_symbol)
+        self.b_update_config.clicked.connect(self.core.update_config)
         #init timer 
-        self.timer.timeout.connect(self.wrapper_update)
+        self.timer.timeout.connect(self.core.update_)
         #init combo box
-        self.structure_select.currentIndexChanged.connect(self.wrapper_structure_change)
-        self.enum_select.currentIndexChanged.connect(self.wrapper_enum_change)
-        self.instance_select.currentIndexChanged.connect(self.wrapper_instance_change)
+        self.structure_select.currentIndexChanged.connect(self.core.update_structure)
+        self.enum_select.currentIndexChanged.connect(self.core.update_enum)
+        self.instance_select.currentIndexChanged.connect(self.core.update_property)
+        self.symbol_select.currentIndexChanged.connect(self.core.update_symbol)
 
 
     """
     Set up all labels
     """
-    def setupLabel(self):
+    def setupLabel(self) -> None:
         self.l_v_ver.setText(self.manager.version)
         self.l_v_serv_status.setText("Disconnected")
 
-        self.instance_select.addItem("No instance found")
-        self.structure_select.addItem("No structure found")
-        self.enum_select.addItem("No Enum found")
+        self.instance_select.addItem("No Instances found")
+        self.structure_select.addItem("No Structures found")
+        self.enum_select.addItem("No Enums found")
+        self.symbol_select.addItem("No Symbols found")
         self.l_v_sync_time.setText(str(self.manager.update_time))
 
         self.le_v_ip.setText(self.manager.ip)
@@ -119,6 +94,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 
 
     #DO NOT MODIFY/ADD/REMOVE, AUTO GENERATED WITH FORM.UI IN RESSOURCE/
+    # pyuic5 form.ui | grep setupUi -A 5000 > ui.py
     #------------------------------------------------------------------
 
     def setupUi(self, IDASync):
@@ -172,7 +148,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.l_v_serv_status.setFont(font)
         self.l_v_serv_status.setObjectName("l_v_serv_status")
         self.sync_ = QtWidgets.QTabWidget(self.main_idasync)
-        self.sync_.setGeometry(QtCore.QRect(760, 40, 781, 681))
+        self.sync_.setGeometry(QtCore.QRect(730, 20, 781, 681))
         palette = QtGui.QPalette()
         brush = QtGui.QBrush(QtGui.QColor(0, 255, 0))
         brush.setStyle(QtCore.Qt.SolidPattern)
@@ -198,6 +174,41 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.sync_.setObjectName("sync_")
         self.tab = QtWidgets.QWidget()
         self.tab.setObjectName("tab")
+        self.l_p_select_symbol = QtWidgets.QLabel(self.tab)
+        self.l_p_select_symbol.setGeometry(QtCore.QRect(20, 20, 221, 21))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        font.setBold(True)
+        self.l_p_select_symbol.setFont(font)
+        self.l_p_select_symbol.setObjectName("l_p_select_symbol")
+        self.symbol_select = QtWidgets.QComboBox(self.tab)
+        self.symbol_select.setGeometry(QtCore.QRect(30, 70, 701, 61))
+        self.symbol_select.setObjectName("symbol_select")
+        self.p_symbol_sig = QtWidgets.QTextEdit(self.tab)
+        self.p_symbol_sig.setGeometry(QtCore.QRect(40, 220, 721, 81))
+        palette = QtGui.QPalette()
+        brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.Base, brush)
+        brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.Base, brush)
+        self.p_symbol_sig.setPalette(palette)
+        self.p_symbol_sig.setObjectName("p_symbol_sig")
+        self.l_p_symbol_sig = QtWidgets.QLabel(self.tab)
+        self.l_p_symbol_sig.setGeometry(QtCore.QRect(310, 170, 221, 21))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        font.setBold(True)
+        self.l_p_symbol_sig.setFont(font)
+        self.l_p_symbol_sig.setObjectName("l_p_symbol_sig")
+        self.b_import_symbol = QtWidgets.QPushButton(self.tab)
+        self.b_import_symbol.setGeometry(QtCore.QRect(200, 350, 381, 91))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        font.setBold(True)
+        self.b_import_symbol.setFont(font)
+        self.b_import_symbol.setObjectName("b_import_symbol")
         self.sync_.addTab(self.tab, "")
         self.sync_struct = QtWidgets.QWidget()
         self.sync_struct.setObjectName("sync_struct")
@@ -438,8 +449,8 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.menubar.addAction(self.menuExit.menuAction())
 
         self.retranslateUi(IDASync)
-        self.main_.setCurrentIndex(2)
-        self.sync_.setCurrentIndex(2)
+        self.main_.setCurrentIndex(0)
+        self.sync_.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(IDASync)
 
     def retranslateUi(self, IDASync):
@@ -450,6 +461,9 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.b_connect.setText(_translate("IDASync", "Connect to IDASync"))
         self.l_p_serv_status.setText(_translate("IDASync", "Status : "))
         self.l_v_serv_status.setText(_translate("IDASync", "serv_status"))
+        self.l_p_select_symbol.setText(_translate("IDASync", "Select a Symbol"))
+        self.l_p_symbol_sig.setText(_translate("IDASync", "Symbol Signature"))
+        self.b_import_symbol.setText(_translate("IDASync", "Import Signature into DB via matching Name"))
         self.sync_.setTabText(self.sync_.indexOf(self.tab), _translate("IDASync", "Symbol"))
         self.l_p_select_struct.setText(_translate("IDASync", "Select a Structure"))
         self.l_p_struc_overview.setText(_translate("IDASync", "Structure Overview"))
@@ -479,4 +493,3 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.l_p_author_4.setText(_translate("IDASync", "All Pull Requests are welcomed"))
         self.main_.setTabText(self.main_.indexOf(self.main_info), _translate("IDASync", "Information"))
         self.menuExit.setTitle(_translate("IDASync", "Exit"))
-

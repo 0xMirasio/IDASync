@@ -40,14 +40,12 @@ def getConfig():
 
     return ip,port
         
-    
-
-
 class Server():
     def __init__(self):
         self.instances = []
         self.structs_ = {}
         self.enums_ = {}
+        self.symbols_ = {}
         self.ServerNewData = {}
         
     def UpdateNewDataExceptInstance(self, instance_ : str):
@@ -62,6 +60,7 @@ class Server():
         print(f"[Debug] instance -> {self.instances}")
         print(f"[Debug] Structures -> {self.structs_}")
         print(f"[Debug] Enums -> {self.enums_}")
+        print(f"[Debug] Symbols -> {self.symbols_}")
         print(f"[Debug] ServerNewData -> {self.ServerNewData}")
 
     def ping(self):
@@ -112,6 +111,15 @@ class Server():
 
         return "register_enums_ok"
     
+    def register_symbols(self, symbols, instance):
+        if instance not in self.instances:
+            return "instance_not_found"
+        
+        self.symbols_[instance] = symbols
+        self.UpdateNewDataExceptInstance(instance)
+
+        return "register_symbols_ok"
+    
     def get_structs(self, instance):
         if instance not in self.structs_:
             return "instance_not_found"
@@ -123,6 +131,12 @@ class Server():
             return "instance_not_found"
         
         return self.enums_[instance]
+    
+    def get_symbols(self, instance):
+        if instance not in self.symbols_:
+            return "instance_not_found"
+        
+        return self.symbols_[instance]
     
     def hasNewUpdate(self, instance : str):
 
@@ -161,6 +175,10 @@ def register_structs(package: Package):
 def register_enums(package: Package):
     return server_instance.register_enums(package.data["enums"],package.data["instance"])
 
+@app.post("/register_symbols/")
+def register_symbols(package: Package):
+    return server_instance.register_symbols(package.data["symbols"],package.data["instance"])
+
 @app.post("/get_structs/")
 def get_structs(instance: Instance):
     return server_instance.get_structs(instance.instance)
@@ -168,6 +186,10 @@ def get_structs(instance: Instance):
 @app.post("/get_enums/")
 def get_enums(instance: Instance):
     return server_instance.get_enums(instance.instance)
+
+@app.post("/get_symbols/")
+def get_symbols(instance: Instance):
+    return server_instance.get_symbols(instance.instance)
 
 @app.get("/get_instance/")
 def get_instance():
