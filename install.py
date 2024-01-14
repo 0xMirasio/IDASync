@@ -19,7 +19,7 @@ INSTALL = ["plugin/idasync.py", "plugin/idasync"]
 
 #### Debug
 ERASE_CONFIG = True
-PACKAGE_DONT_INSTALL = True
+PACKAGE_DONT_INSTALL = False
 #####
 
 config = "config.json"
@@ -128,7 +128,7 @@ def main():
 
     os.system(f"cd {ROOT_DIR}/framework && pip install --user .")
 
-    print("If install is sucessful, you can run idasyncserver with : python3 -m idasyncserver")
+    print("If install is sucessful, you can run idasyncserver with : python3 -m idasyncserver or idasyncserver")
     
 
 if __name__ == "__main__":
