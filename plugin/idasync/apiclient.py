@@ -148,7 +148,7 @@ class Client():
                 elif response.text.replace('"','') == "serverHasNoNewUpdate":
                     return (0, "", 0)
                 else:
-                    return (1, "[ERROR] Unknow response msg from server", 0)
+                    return (1, f"[ERROR] Bad response from server : {response.text}", 0)
             
             return (1, f"[ERROR] hasNewUpdate() failed : {response.text}", {})
             

@@ -6,7 +6,7 @@ import os
 from pydantic import BaseModel
 import json
 
-DEBUG = True
+DEBUG = False
 
 class Instance(BaseModel):
     instance: str
@@ -48,13 +48,6 @@ class Server():
         self.symbols_ = {}
         self.ServerNewData = {}
         
-    def UpdateNewDataExceptInstance(self, instance_ : str):
-
-        for inst in self.instances:
-            if inst == instance_:
-                continue
-            self.ServerNewData[inst] = True
-
     def debugCurrentServerInformation(self):
         print("[Debug] Server information")
         print(f"[Debug] instance -> {self.instances}")
@@ -71,8 +64,9 @@ class Server():
             return "register_instance_ok"
         
         self.instances.append(instance)
-        self.ServerNewData[instance] = False
-        self.UpdateNewDataExceptInstance(instance)
+        # tell other instances to update
+        for instance in self.instances:
+            self.ServerNewData[instance] = True
         
         return "register_instance_ok"
     
@@ -83,8 +77,12 @@ class Server():
         self.instances.remove(instance)
         self.structs_.pop(instance, None)
         self.enums_.pop(instance, None)
+        self.symbols_.pop(instance, None)
         self.ServerNewData.pop(instance, None)
-        self.UpdateNewDataExceptInstance(instance)
+
+        # tell other instances to update
+        for instance in self.instances:
+            self.ServerNewData[instance] = True
 
         if DEBUG:
             self.debugCurrentServerInformation()
@@ -98,7 +96,8 @@ class Server():
             return "instance_not_found"
         
         self.structs_[instance] = structs
-        self.UpdateNewDataExceptInstance(instance)
+        for instance in self.instances:
+            self.ServerNewData[instance] = True
 
         return "register_structs_ok"
     
@@ -107,7 +106,8 @@ class Server():
             return "instance_not_found"
         
         self.enums_[instance] = enums
-        self.UpdateNewDataExceptInstance(instance)
+        for instance in self.instances:
+            self.ServerNewData[instance] = True
 
         return "register_enums_ok"
     
@@ -116,7 +116,8 @@ class Server():
             return "instance_not_found"
         
         self.symbols_[instance] = symbols
-        self.UpdateNewDataExceptInstance(instance)
+        for instance in self.instances:
+            self.ServerNewData[instance] = True
 
         return "register_symbols_ok"
     

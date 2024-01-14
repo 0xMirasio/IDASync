@@ -24,6 +24,10 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.enums_all = {}
         self.symbols_all = {}
 
+        self.structs_all_shadow = {}
+        self.enums_all_shadow = {}
+        self.symbols_all_shadow = {}
+
         self.timer = QTimer(self)
         self.timer.start(self.manager.update_time)
 

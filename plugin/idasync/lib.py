@@ -7,6 +7,7 @@ from idasync.apiclient import Client
 
 import os
 import json
+import copy
 
 class Core(object):
     def __init__(self, QtUI) -> None:
@@ -111,6 +112,11 @@ class Core(object):
 
         self.ui.progressBar.setValue(50)
         toConsole(self.ui, "Get Symbols from Server : ✔️")
+
+        ### Update SHADOW
+        self.ui.structs_all_shadow = copy.copy(self.ui.structs_all)
+        self.ui.enums_all_shadow = copy.copy(self.ui.enums_all)
+        self.ui.symbols_all_shadow = copy.copy(self.ui.symbols_all)
         
         
         ### ALL DONE
@@ -207,6 +213,50 @@ class Core(object):
                 overview = f"@{address}\n{type}"
                 self.ui.p_symbol_sig.setText(f"{overview}")
 
+    # test if hew data has changed in DB and send it to server
+    def registerNewData(self) -> None:
+        
+        ### TODO : basic implementation to submit new data. But this is *** in optimisation.
+        ### do a better test/extract new data for speedup / anti lag optimisation
+
+        def update_register_structs():
+            if self.ui.structs_all_shadow != self.ui.structs_all:
+                all_structures = scripts_get_structures()
+                ret = register_structure(self.ui, all_structures, self.ui.manager.name_instance)
+                if ret:
+                    pprint("[ERROR] couldn't save new structs to server")
+                    return
+
+                toConsole(self.ui, "[Update] Send new structs to server : ✔️")
+                self.ui.structs_all_shadow = copy.copy(self.ui.structs_all)
+
+        def update_register_enums():
+            ### Submit new enums
+            if self.ui.enums_all_shadow != self.ui.enums_all:
+                all_enums = scripts_get_enums()
+                ret = register_enums(self.ui, all_enums, self.ui.manager.name_instance)
+                if ret:
+                    pprint("[ERROR] couldn't save new enums to server")
+                    return
+
+                toConsole(self.ui, "[Update] Send new enums to server : ✔️")
+                self.ui.enums_all_shadow = copy.copy(self.ui.enums_all)
+
+        def update_register_symbols():
+            ### Submit new symbols
+            if self.ui.symbols_all_shadow != self.ui.symbols_all:
+                all_symbols = scripts_get_symbols()
+                ret = register_symbols(self.ui, all_symbols, self.ui.manager.name_instance)
+                if ret:
+                    pprint("[ERROR] couldn't save new symbols to server")
+
+                toConsole(self.ui, "[Update] Send new symbols to server : ✔️")
+                self.ui.symbols_all_shadow = copy.copy(self.ui.symbols_all)
+
+        update_register_structs()
+        update_register_enums()
+        update_register_symbols()
+
 
     #main methods called when update , can be called manually or with a timer
     def update_(self, force_update:bool=False) -> None:
@@ -214,11 +264,18 @@ class Core(object):
         if self.ui.is_server_connected == False:
             return
         
+        all_structures = scripts_get_structures()
+        all_enums = scripts_get_enums()
+        all_symbols = scripts_get_symbols()
+        self.ui.structs_all[self.ui.manager.name_instance] = all_structures
+        self.ui.enums_all[self.ui.manager.name_instance] = all_enums
+        self.ui.symbols_all[self.ui.manager.name_instance] = all_symbols
+        
+        self.registerNewData()
+        
         if not hasChanged(self.ui) and not force_update:
             return
-        
-        pprint("Server has new data. Updating...")
-        
+                
         #update instance
         instances = get_instance(self.ui)
         if len(instances) == 0:
@@ -241,7 +298,7 @@ class Core(object):
                 self.ui.symbols_all[instance] = symbols
 
 
-        toConsole(self.ui, "Update from server : ✔️")
+        pprint("Update from server OK")
 
 
     #main methods to update structure field when user change struct in combo box

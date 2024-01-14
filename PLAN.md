@@ -3,8 +3,8 @@
 ## Incoming / Hot priority
 
 - test linux support
-- AutoRegister new enums/symbols/structs
-- Get struct & enum from local type
+- Get struct & enum from local type (current idb)
+- Calculate (bindiff like) entropy from functions for symbols matching and import symbols name
 
 ## Todo / Low priority
 
